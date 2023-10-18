@@ -1,15 +1,36 @@
 import React from 'react'
 import { useState } from 'react';
-import { useAddNewTagMutation } from '../features/api/apiSlice';
+import { useAddNewTagMutation, useGetUsersQuery  } from '../features/api/apiSlice';
 import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText } from '@mui/material';
-const CreateTagDialog = () => {
+import { slugify } from '../utils/slugify';
+const CreateTagDialog = ({memberList, tagName, hook, isLoading, message} : any) => {
+    let createMode = false
+    if(tagName === '') {
+        createMode = true;
+    }
+    const oldSlug = tagName != '' ? slugify(tagName) : undefined;
     const [open, setOpen] = useState(false)
-    const [name, setName] = useState<string>('')
-    const [members, setMembers] = useState<string[]>([])
-    const [addNewTag, { isLoading }] = useAddNewTagMutation()
+    console.log(typeof memberList)
+    console.log(typeof tagName)
+    const [name, setName] = useState<string>()
+    const [members, setMembers] = useState<string[]>()
+    // const [addNewTag, { isLoading }] = useAddNewTagMutation()
+    const {
+        data: users = [],
+        isSuccess : UserSuccess,
+    } = useGetUsersQuery()
 
+    const userList = UserSuccess && users.map((user : any) => {
+        return (
+            <MenuItem key={user.user.username} value={user.user.username}>
+                {user.user.username}
+            </MenuItem>
+        )
+    })
     const canSave = [name, members].every(Boolean) && !isLoading
     const handleOpen = () => {
+        setName(tagName)
+        setMembers(memberList)
         setOpen(true)
     }
     const handleCloseCancel = () => {
@@ -26,7 +47,13 @@ const CreateTagDialog = () => {
     const handleCloseSubmit = async () => {
         if (canSave) {
             try {
-                await addNewTag({ name: name, users: members }).unwrap().then(response => console.log(response)).catch(error => console.log(error))
+                let slug
+                if(createMode) {
+                    slug = slugify(name)
+                } else {
+                    slug = oldSlug
+                }
+                await hook({ name: name, users: members, slug : slug}).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
                 setName('')
                 setMembers([])
             } catch (err) {
@@ -41,7 +68,7 @@ const CreateTagDialog = () => {
                 marginLeft: "3rem",
                 marginBottom: "4rem",
                 width: "60%",
-            }}>Create Tag</Button>
+            }}>{message}</Button>
             <Dialog open={open} onClose={handleCloseCancel}>
                 <DialogTitle>Create a new tag</DialogTitle>
                 <DialogContent>
@@ -54,23 +81,22 @@ const CreateTagDialog = () => {
                         label='Name...'
                         fullWidth
                         variant='standard'
+                        value={name}
                         onChange={handleNameChange}
                     />
                     <DialogContentText>
                         Add some members to your tag
                     </DialogContentText>
                     <Select multiple value={members} onChange={handleMemberChange}>
-                        <MenuItem key="datboi" value="datboi">datboi </MenuItem>
-                        <MenuItem key="Ashwanth" value="Ashwanth">Ashwanth </MenuItem>
-                        <MenuItem key="Krithiga" value="Krithiga">Krithiga </MenuItem>
+                        {userList}
                     </Select>
                 </DialogContent>
                 <DialogActions sx={{
                     display: "flex",
                     justifyContent: "center"
                 }}>
-                    <Button variant="contained" onClick={handleCloseCancel}>Cancel</Button>
-                    <Button variant="contained" onClick={handleCloseSubmit}>Submit</Button>
+                    <Button variant="contained" onClick={handleCloseCancel} disabled={isLoading}>Cancel</Button>
+                    <Button variant="contained" onClick={handleCloseSubmit} disabled={isLoading}>Submit</Button>
                 </DialogActions>
             </Dialog>
         </>

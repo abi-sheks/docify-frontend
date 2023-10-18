@@ -1,15 +1,19 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useGetTagQuery } from '../features/api/apiSlice';
+import { useGetTagQuery, useEditTagMutation, useDeleteTagMutation } from '../features/api/apiSlice';
 import { Card, CardContent, CardActions, Typography, Grid, Button, List, ListItemText, ListItem } from '@mui/material';
+import { CreateTagDialog, DeleteTagDialog} from '../components';
+import { slugify } from '../utils/slugify';
 
-const TagDetail = ({ match }: any) => {
+const TagDetail = () => {
     const params = useParams()
+    const [name, setName] = useState('');
+    const [members, setMembers] = useState([]);
     const tagSlug: any = params.tagSlug
     console.log(tagSlug)
     const { data: tag, isFetching, isSuccess } = useGetTagQuery(tagSlug)
     console.log(tag)
-    const members = isSuccess && tag.users.map((username: string) => {
+    const memberList = isSuccess && tag.users.map((username: string) => {
         return (
             <ListItem>
                 <ListItemText>
@@ -18,6 +22,8 @@ const TagDetail = ({ match }: any) => {
             </ListItem>
         )
     })
+    const [updateTag, {isLoading : TagEditLoading}] = useEditTagMutation()
+    const [deleteTag, {isLoading : TagDeleteLoading}] = useDeleteTagMutation()
     let content
     if (isFetching) {
         content = <div>
@@ -51,14 +57,14 @@ const TagDetail = ({ match }: any) => {
                                 {tag.name}
                             </Typography>
                             <List>
-                                {members}
+                                {memberList}
                             </List>
                         </CardContent>
                         <CardActions sx={{
                             marginBottom: "2rem",
                         }}>
-                            <Button size='small' variant='contained'>Change name</Button>
-                            <Button size='small' variant='contained'>Add members</Button>
+                            <CreateTagDialog memberList = {tag.users} tagName={tag.name} hook={updateTag} isLoading={TagEditLoading} message="Edit tag"/>
+                            <DeleteTagDialog tagSlug={slugify(tag.name)} deletionHook={deleteTag} />
                         </CardActions>
                     </Card>
                 </Grid>

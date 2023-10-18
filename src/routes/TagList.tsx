@@ -4,7 +4,7 @@ import { useGetTagsQuery, useAddNewTagMutation } from '../features/api/apiSlice'
 import { List, ListItem, ListItemText, Grid, Typography, ListItemButton, Skeleton, Button, Container } from '@mui/material';
 import { Dialog, DialogTitle, DialogContent, DialogContentText, TextField, Select, MenuItem, DialogActions } from '@mui/material';
 import { Link } from 'react-router-dom';
-import CreateTagDialog from './CreateTagDialog'; 
+import { CreateTagDialog } from '../components/';
 
 
 
@@ -13,14 +13,15 @@ const TagList = () => {
         data: tags = [],
         isLoading,
         isFetching,
-        isSuccess,
+        isSuccess : TagSuccess,
         isError,
         error
     } = useGetTagsQuery()
+    const [addNewTag, { isLoading : MutateLoading }] = useAddNewTagMutation()
 
-    console.log(tags)
-    let content;
-    const tagList = tags.map((tag: any) => {
+
+
+    const tagList = TagSuccess && tags.map((tag: any) => {
         return (
             <ListItem key={tag.name}>
                 <ListItemButton component={Link} to={tag.slug}>
@@ -49,7 +50,7 @@ const TagList = () => {
                     {tagList}
                 </List>
             </Container>
-            <CreateTagDialog />
+            <CreateTagDialog tagName='' memberList ={[]} hook = {addNewTag} isLoading={MutateLoading} message="Create Tag"/>
         </Grid>
     )
 }

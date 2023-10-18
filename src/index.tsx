@@ -5,6 +5,8 @@ import { LoginScreen, HomeScreen, WelcomeSplash, TagList, DocList, TagDetail, Ed
 import store from "./app/store";
 import { Provider } from "react-redux";
 import '@fontsource/roboto/300.css'
+import './global.css'
+
 const router = createBrowserRouter([
     {
         path: '/',
@@ -29,13 +31,15 @@ const router = createBrowserRouter([
             {
                 path : '/home/tags/:tagSlug',
                 element : <TagDetail />,
-            }
-        ]
+            },
+
+        ],
     },
     {
-        path : '/home/docs/create',
+        path : '/home/docs/:docId',
         element : <EditingScreen />,
     }
+    
 ])
 
 ReactDOM.render(
