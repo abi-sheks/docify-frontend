@@ -3,7 +3,7 @@ import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, Di
 import React, { useState } from 'react'
 import {Link} from 'react-router-dom';
 
-const DeleteTagDialog = ({ tagSlug, deletionHook }: any) => {
+const DeleteTagDialog = ({ tagId, deletionHook }: any) => {
     const [open, setOpen] = useState(false)
     const handleOpen = () => {
         setOpen(true)
@@ -13,7 +13,7 @@ const DeleteTagDialog = ({ tagSlug, deletionHook }: any) => {
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook(tagSlug).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
+            await deletionHook(tagId).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
 
         } catch (err) {
             console.error(err)

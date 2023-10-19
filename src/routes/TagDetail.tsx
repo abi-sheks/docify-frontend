@@ -9,9 +9,8 @@ const TagDetail = () => {
     const params = useParams()
     const [name, setName] = useState('');
     const [members, setMembers] = useState([]);
-    const tagSlug: any = params.tagSlug
-    console.log(tagSlug)
-    const { data: tag, isFetching, isSuccess } = useGetTagQuery(tagSlug)
+    const tagId: any = params.tagId
+    const { data: tag, isFetching, isSuccess } = useGetTagQuery(tagId)
     console.log(tag)
     const memberList = isSuccess && tag.users.map((username: string) => {
         return (
@@ -63,8 +62,8 @@ const TagDetail = () => {
                         <CardActions sx={{
                             marginBottom: "2rem",
                         }}>
-                            <CreateTagDialog memberList = {tag.users} tagName={tag.name} hook={updateTag} isLoading={TagEditLoading} message="Edit tag"/>
-                            <DeleteTagDialog tagSlug={slugify(tag.name)} deletionHook={deleteTag} />
+                            <CreateTagDialog memberList = {tag.users} tagName={tag.name} hook={updateTag} isLoading={TagEditLoading} message="Edit tag" id={tag.id} />
+                            <DeleteTagDialog tagSlug={tag.id} deletionHook={deleteTag} />
                         </CardActions>
                     </Card>
                 </Grid>

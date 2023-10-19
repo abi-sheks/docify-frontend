@@ -22,9 +22,10 @@ const TagList = () => {
 
 
     const tagList = TagSuccess && tags.map((tag: any) => {
+        console.log(`The tag id is ${tag.id}`)
         return (
             <ListItem key={tag.name}>
-                <ListItemButton component={Link} to={tag.slug}>
+                <ListItemButton component={Link} to={tag.id}>
                     <ListItemText primary={tag.name} />
                 </ListItemButton>
             </ListItem>
@@ -50,7 +51,7 @@ const TagList = () => {
                     {tagList}
                 </List>
             </Container>
-            <CreateTagDialog tagName='' memberList ={[]} hook = {addNewTag} isLoading={MutateLoading} message="Create Tag"/>
+            <CreateTagDialog id = {undefined} tagName='' memberList ={[]} hook = {addNewTag} isLoading={MutateLoading} message="Create Tag"/>
         </Grid>
     )
 }

@@ -4,7 +4,7 @@ import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 
 export const apiSlice = createApi({
     reducerPath : "api",
-    baseQuery : fetchBaseQuery({baseUrl : 'http://127.0.0.1:8000/search'}),
+    baseQuery : fetchBaseQuery({baseUrl : 'http://127.0.0.1:8000/api'}),
     tagTypes : ['Tag', 'User', 'CurrentUser', 'Doc'],
     endpoints : (builder) => ({
         getTags : builder.query<any, void>({
@@ -12,12 +12,12 @@ export const apiSlice = createApi({
             providesTags : (result = [], error, arg) => [
                 'Tag',
                 'Doc',
-                ...result.map(({slug} : any) => [{type : 'Tag', slug}])
+                ...result.map(({id} : any) => [{type : 'Tag', id}])
             ]
         }),
         getTag : builder.query<any, string>({
-            query : (tagSlug) => `/tags/${tagSlug}`,
-            providesTags : (result, error, arg) => [{type : 'Tag', slug : arg}]
+            query : (tagId) => `/tags/${tagId}`,
+            providesTags : (result, error, arg) => [{type : 'Tag', id : arg}]
         }),
         addNewTag : builder.mutation({
             query : (tag) => ({
@@ -29,15 +29,15 @@ export const apiSlice = createApi({
         }),
         editTag : builder.mutation({
             query : (tag) => ({
-                url : `/tags/${tag.slug}`,
+                url : `/tags/${tag.id}`,
                 method : 'PUT',
                 body : tag,
             }),
-            invalidatesTags : (result, error, arg) => [{type : 'Tag', slug : arg.slug}]
+            invalidatesTags : (result, error, arg) => [{type : 'Tag', id : arg.id}]
         }),
         deleteTag : builder.mutation({
-            query : (tagSlug) => ({
-                url : `/tags/${tagSlug}`,
+            query : (tagId) => ({
+                url : `/tags/${tagId}`,
                 method : "DELETE",
             }),
             invalidatesTags : ['Tag', 'Doc']
@@ -47,12 +47,12 @@ export const apiSlice = createApi({
             providesTags : (result = [], error, arg) => [
                 'Doc', 
                 'Tag',
-                ...result.map(({slug} : any) => [{type : "Doc", slug}])
+                ...result.map(({id} : any) => [{type : "Doc", id}])
             ]
         }),
         getDoc : builder.query<any, string>({
             query : (docId) => `/docs/${docId}`,
-            providesTags : (result, error, arg) => [{type : 'Doc', slug : arg}],
+            providesTags : (result, error, arg) => [{type : 'Doc', id : arg}],
         }),
         addNewDoc : builder.mutation({
             query : (doc) => ({
@@ -64,15 +64,15 @@ export const apiSlice = createApi({
         }),
         editDoc : builder.mutation({
             query : (doc) => ({
-                url : `/docs/${doc.slug}`,
+                url : `/docs/${doc.id}`,
                 method : 'PUT',
                 body : doc,
             }),
-            invalidatesTags : (result, error, arg) => ['Doc', 'Tag', {type : 'Doc', slug : arg.slug}]
+            invalidatesTags : (result, error, arg) => ['Doc', 'Tag', {type : 'Doc', id : arg.id}]
         }),
         deleteDoc : builder.mutation({
-            query : (docSlug) => ({
-                url : `/docs/${docSlug}`,
+            query : (docId) => ({
+                url : `/docs/${docId}`,
                 method : 'DELETE',
             }),
             invalidatesTags : ['Doc']
@@ -95,7 +95,7 @@ export const apiSlice = createApi({
         }),
         getCurrentUser : builder.query<any, string>({
             query : () => ({
-                url : "https://channeli.in/oauth/authorise?client_id=CLIENT_ID",
+                url : "/auth",
             })
         }),
     })

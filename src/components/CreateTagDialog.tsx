@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { useAddNewTagMutation, useGetUsersQuery  } from '../features/api/apiSlice';
 import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText } from '@mui/material';
 import { slugify } from '../utils/slugify';
-const CreateTagDialog = ({memberList, tagName, hook, isLoading, message} : any) => {
+const CreateTagDialog = ({memberList, tagName, hook, isLoading, message, id} : any) => {
     let createMode = false
-    if(tagName === '') {
+    if(tagName === '' || id === undefined) {
         createMode = true;
     }
     const oldSlug = tagName != '' ? slugify(tagName) : undefined;
@@ -50,12 +50,15 @@ const CreateTagDialog = ({memberList, tagName, hook, isLoading, message} : any) 
                 let slug
                 if(createMode) {
                     slug = slugify(name)
+                    await hook({ name: name, users: members, slug : slug}).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
+                    setName('')
+                    setMembers([])
                 } else {
                     slug = oldSlug
+                    await hook({ name: name, users: members, slug : slug, id : id}).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
+                    setName('')
+                    setMembers([])
                 }
-                await hook({ name: name, users: members, slug : slug}).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
-                setName('')
-                setMembers([])
             } catch (err) {
                 console.error(err)
             }

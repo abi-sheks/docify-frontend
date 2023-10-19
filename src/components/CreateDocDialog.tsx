@@ -1,26 +1,26 @@
 import React, { useState } from 'react';
 import { useAddNewDocMutation, useGetTagsQuery } from '../features/api/apiSlice';
 import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText } from '@mui/material';
-import {slugify} from '../utils/slugify';
+import { slugify } from '../utils/slugify';
 
-const CreateDocDialog = ({readerList, writerList, docTitle, hook, isLoading, message} : any) => {
+const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading, message }: any) => {
   let createMode = false
-  if(docTitle === '') {
-        createMode = true;
-    }
+  if (docTitle === '' || id === undefined) {
+    createMode = true;
+  }
   const oldSlug = docTitle != '' ? slugify(docTitle) : undefined;
   // const oldSlug = slugify(docTitle)
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState<string>('')
   const [readers, setReaders] = useState<string[]>([])
   const [writers, setWriters] = useState<string[]>([])
-  
+
 
   const canSave = [title].every(Boolean) && !isLoading
 
   const {
     data: tags = [],
-    isLoading : TagLoading,
+    isLoading: TagLoading,
     isFetching,
     isSuccess,
     isError,
@@ -59,16 +59,21 @@ const CreateDocDialog = ({readerList, writerList, docTitle, hook, isLoading, mes
     if (canSave) {
       try {
         let slug
-                if(createMode) {
-                    slug = slugify(title)
-                } else {
-                    slug = oldSlug
-                }
-        await hook({ title: title, read_tags: readers, write_tags: writers, slug : slug }).unwrap().
-          then((response : any) => console.log(response))
-        setTitle('')
-        setReaders([])
-        setWriters([])
+        if (createMode) {
+          slug = slugify(title)
+          await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug}).unwrap().
+            then((response: any) => console.log(response))
+          setTitle('')
+          setReaders([])
+          setWriters([])
+        } else {
+          slug = oldSlug
+          await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug, id: id }).unwrap().
+            then((response: any) => console.log(response))
+          setTitle('')
+          setReaders([])
+          setWriters([])
+        }
       }
       catch (error) {
         console.log(error)

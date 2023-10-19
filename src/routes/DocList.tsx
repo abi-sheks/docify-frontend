@@ -40,7 +40,7 @@ const DocList = () => {
             <Button variant='contained' component={Link} to={doc.id}>
               Edit
             </Button>
-            <CreateDocDialog hook = {updateDoc} isLoading={DocEditLoading} docTitle={doc.title} readerList={doc.read_tags} writerList = {doc.write_tags} message="Update"/>
+            <CreateDocDialog hook = {updateDoc} isLoading={DocEditLoading} docTitle={doc.title} readerList={doc.read_tags} writerList = {doc.write_tags} id = {doc.id} message="Update"/>
             <DeleteDocDialog doc={doc} deletionHook={deleteDoc}/>
           </CardActions>
         </Card>
@@ -60,7 +60,7 @@ const DocList = () => {
       }}>
         {docList}
       </Grid>
-        <CreateDocDialog readerList = {[]} writerList={[]} docTitle = '' hook={addNewDoc} isLoading={DocMutLoading} message="Create Doc"/>
+        <CreateDocDialog readerList = {[]} writerList={[]} docTitle = '' hook={addNewDoc} isLoading={DocMutLoading} message="Create Doc" id={undefined} />
     </Grid>
 
   )

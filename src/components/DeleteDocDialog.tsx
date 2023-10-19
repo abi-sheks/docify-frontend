@@ -12,7 +12,7 @@ const DeleteDocDialog = ({ doc, deletionHook }: any) => {
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook(doc.slug).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
+            await deletionHook(doc.id).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
         } catch (err) {
             console.error(err)
         }
