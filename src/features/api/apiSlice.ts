@@ -1,11 +1,12 @@
 import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
+import {Tag, Doc} from '../../interfaces'
 
 
 
 export const apiSlice = createApi({
     reducerPath : "api",
     baseQuery : fetchBaseQuery({baseUrl : 'http://127.0.0.1:8000/api'}),
-    tagTypes : ['Tag', 'User', 'CurrentUser', 'Doc'],
+    tagTypes : ['Tag', 'User', 'CurrentUser', 'Doc', 'DocSearch'],
     endpoints : (builder) => ({
         getTags : builder.query<any, void>({
             query : () => '/tags',
@@ -60,7 +61,7 @@ export const apiSlice = createApi({
                 method : "POST",
                 body : doc,
             }),
-            invalidatesTags : ['Tag', 'Doc']
+            invalidatesTags : ['Tag', 'Doc', 'DocSearch']
         }),
         editDoc : builder.mutation({
             query : (doc) => ({
@@ -68,7 +69,14 @@ export const apiSlice = createApi({
                 method : 'PUT',
                 body : doc,
             }),
-            invalidatesTags : (result, error, arg) => ['Doc', 'Tag', {type : 'Doc', id : arg.id}]
+            invalidatesTags : (result, error, arg) => ['Doc', 'Tag', 'DocSearch', {type : 'Doc', id : arg.id}]
+        }),
+        getDocSearches : builder.query({
+            query : (title__contains : any) => ({
+                url : `/docs/search`,
+                params : {title__contains},
+            }),
+            providesTags : ['DocSearch'],
         }),
         deleteDoc : builder.mutation({
             query : (docId) => ({
@@ -116,4 +124,5 @@ export const {
     useEditDocMutation,
     useDeleteDocMutation,
     useDeleteTagMutation,
+    useGetDocSearchesQuery,
  } = apiSlice;

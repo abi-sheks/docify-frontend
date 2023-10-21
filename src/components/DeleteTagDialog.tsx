@@ -1,9 +1,14 @@
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Typography } from '@mui/material';
+import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Typography, Tooltip, Snackbar } from '@mui/material';
 import React, { useState } from 'react'
 import {Link} from 'react-router-dom';
 
-const DeleteTagDialog = ({ tagId, deletionHook }: any) => {
+interface DeleteTagProps{
+    tagId : string,
+    deletionHook : any,
+}
+
+const DeleteTagDialog = ({ tagId, deletionHook }: DeleteTagProps) => {
     const [open, setOpen] = useState(false)
     const handleOpen = () => {
         setOpen(true)
@@ -13,7 +18,7 @@ const DeleteTagDialog = ({ tagId, deletionHook }: any) => {
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook(tagId).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
+            await deletionHook(tagId).unwrap().then((response : any) => console.log(response))
 
         } catch (err) {
             console.error(err)
@@ -22,9 +27,13 @@ const DeleteTagDialog = ({ tagId, deletionHook }: any) => {
     }
     return (
         <>
-            <IconButton onClick={handleOpen}>
+            <Tooltip title="Delete">
+            <IconButton onClick={handleOpen} sx={{
+                marginBottom : '4rem',
+            }}>
                 <DeleteIcon />
             </IconButton>
+                </Tooltip>
             <Dialog open ={open} onClose={handleCloseCancel}>
                 <DialogTitle>Are you sure?</DialogTitle>
                 <DialogContent>

@@ -4,14 +4,14 @@ import { useGetTagQuery, useEditTagMutation, useDeleteTagMutation } from '../fea
 import { Card, CardContent, CardActions, Typography, Grid, Button, List, ListItemText, ListItem } from '@mui/material';
 import { CreateTagDialog, DeleteTagDialog} from '../components';
 import { slugify } from '../utils/slugify';
+import { Tag } from '../interfaces';
 
 const TagDetail = () => {
     const params = useParams()
-    const [name, setName] = useState('');
-    const [members, setMembers] = useState([]);
-    const tagId: any = params.tagId
-    const { data: tag, isFetching, isSuccess } = useGetTagQuery(tagId)
-    console.log(tag)
+    const [name, setName] = useState<string>('');
+    const [members, setMembers] = useState<Array<string>>([]);
+    const tagId: string | undefined = params.tagId
+    const { data: tag, isFetching, isSuccess } = useGetTagQuery(tagId as string)
     const memberList = isSuccess && tag.users.map((username: string) => {
         return (
             <ListItem>
@@ -63,7 +63,7 @@ const TagDetail = () => {
                             marginBottom: "2rem",
                         }}>
                             <CreateTagDialog memberList = {tag.users} tagName={tag.name} hook={updateTag} isLoading={TagEditLoading} message="Edit tag" id={tag.id} />
-                            <DeleteTagDialog tagSlug={tag.id} deletionHook={deleteTag} />
+                            <DeleteTagDialog tagId={tag.id} deletionHook={deleteTag} />
                         </CardActions>
                     </Card>
                 </Grid>

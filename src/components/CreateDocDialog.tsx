@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import { useAddNewDocMutation, useGetTagsQuery } from '../features/api/apiSlice';
-import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent } from '@mui/material';
 import { slugify } from '../utils/slugify';
+import { Doc } from '../interfaces';
 
-const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading, message }: any) => {
-  let createMode = false
+interface CreateDocProps {
+  readerList : Array<string>,
+  writerList : Array<string>,
+  docTitle : string,
+  id : string | undefined,
+  message : string,
+  hook : any,
+  isLoading : any
+}
+
+const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading, message }: CreateDocProps) => {
+  let createMode : boolean = false
   if (docTitle === '' || id === undefined) {
     createMode = true;
   }
   const oldSlug = docTitle != '' ? slugify(docTitle) : undefined;
   // const oldSlug = slugify(docTitle)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<boolean>(false)
   const [title, setTitle] = useState<string>('')
   const [readers, setReaders] = useState<string[]>([])
   const [writers, setWriters] = useState<string[]>([])
@@ -27,10 +38,9 @@ const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading
     error
   } = useGetTagsQuery()
 
-  console.log(tags)
   const tagList = isSuccess && tags.map((tag: any) => {
     return (
-      <MenuItem key={tag.name} value={tag.name}>{tag.name}</MenuItem>
+      <MenuItem key={tag.id} value={tag.name}>{tag.name}</MenuItem>
     )
   })
 
@@ -43,14 +53,14 @@ const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading
   const handleCloseCancel = () => {
     setOpen(false);
   }
-  const handleTitleChange = (e: any) => {
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(e.target.value);
   }
-  const handleReadersChange = (e: any) => {
+  const handleReadersChange = (e: SelectChangeEvent<string[]>) => {
     const { target: { value } } = e;
     setReaders(typeof value === "string" ? value.split(',') : value);
   }
-  const handleWritersChange = (e: any) => {
+  const handleWritersChange = (e: SelectChangeEvent<string[]>) => {
     const { target: { value } } = e;
     const currWriters = typeof value === "string" ? value.split(',') : value
     setWriters(currWriters);
@@ -62,7 +72,7 @@ const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading
         if (createMode) {
           slug = slugify(title)
           await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug}).unwrap().
-            then((response: any) => console.log(response))
+            then((response : any) => console.log(response))
           setTitle('')
           setReaders([])
           setWriters([])

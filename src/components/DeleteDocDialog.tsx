@@ -1,8 +1,13 @@
 import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Typography } from '@mui/material';
+import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Typography, Tooltip } from '@mui/material';
+import {Doc} from '../interfaces';
 import React, { useState } from 'react'
 
-const DeleteDocDialog = ({ doc, deletionHook }: any) => {
+interface DeleteDocProps{
+    doc : Doc,
+    deletionHook : any,
+}
+const DeleteDocDialog = ({ doc, deletionHook }: DeleteDocProps) => {
     const [open, setOpen] = useState(false)
     const handleOpen = () => {
         setOpen(true)
@@ -20,9 +25,11 @@ const DeleteDocDialog = ({ doc, deletionHook }: any) => {
     }
     return (
         <>
+            <Tooltip title="Delete">
             <IconButton onClick={handleOpen}>
                 <DeleteIcon />
             </IconButton>
+            </Tooltip>
             <Dialog open ={open} onClose={handleCloseCancel}>
                 <DialogTitle>Are you sure?</DialogTitle>
                 <DialogContent>
