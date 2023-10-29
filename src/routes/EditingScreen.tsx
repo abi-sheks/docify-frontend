@@ -10,17 +10,18 @@ import { WebsocketProvider } from 'y-websocket';
 import 'quill/dist/quill.bubble.css'
 import { useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
-import { Typography } from '@mui/material';
+import { Button, Typography } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 
 
 const EditingScreen = () => {
     const params = useParams()
-    const docId : string | undefined= params.docId
-    const {data : doc, isFetching, isSuccess} = useGetDocQuery(docId as string)
+    const docId: string | undefined = params.docId
+    const { data: doc, isFetching, isSuccess } = useGetDocQuery(docId as string)
     // let docId : string = 'new'
     const [value, setValue] = useState<string>('');
-    const quillRef : any = useRef<number>(0)
+    const quillRef: any = useRef<number>(0)
     useEffect(() => {
         Quill.register('modules/cursors', QuillCursors);
         const quill = new Quill(document.getElementById("editor") as string | Element, {
@@ -43,13 +44,14 @@ const EditingScreen = () => {
     }, [])
     return (
         <Container sx={{
-            height : '80%',
+            height: '80%',
         }}>
-            <Typography variant='h3'>
+            <Typography variant='h3' color='white' sx={{ fontWeight: '100' }}>
                 {isSuccess && doc.title}
             </Typography>
             <div ref={quillRef} id="editor">
             </div>
+            <Button variant='contained' component={Link} to='/home/docs'>Back</Button>
         </Container>
     )
 }

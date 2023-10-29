@@ -2,7 +2,6 @@ import {createApi, fetchBaseQuery} from '@reduxjs/toolkit/query/react';
 import {Tag, Doc} from '../../interfaces'
 
 
-
 export const apiSlice = createApi({
     reducerPath : "api",
     baseQuery : fetchBaseQuery({baseUrl : 'http://127.0.0.1:8000/api'}),
@@ -71,19 +70,19 @@ export const apiSlice = createApi({
             }),
             invalidatesTags : (result, error, arg) => ['Doc', 'Tag', 'DocSearch', {type : 'Doc', id : arg.id}]
         }),
-        getDocSearches : builder.query({
-            query : (title__contains : any) => ({
-                url : `/docs/search`,
-                params : {title__contains},
-            }),
-            providesTags : ['DocSearch'],
-        }),
         deleteDoc : builder.mutation({
             query : (docId) => ({
                 url : `/docs/${docId}`,
                 method : 'DELETE',
             }),
             invalidatesTags : ['Doc']
+        }),
+        getDocSearches : builder.query({
+            query : (title__contains : any) => ({
+                url : `/docs/search`,
+                params : {title__contains},
+            }),
+            providesTags : ['DocSearch'],
         }),
 
         getUsers : builder.query<any, void>({
@@ -95,7 +94,7 @@ export const apiSlice = createApi({
         }),
         addNewUser : builder.mutation({
             query : (user) => ({
-                url : '/users/',
+                url : '/login/',
                 method : "POST",
                 body : user,
             }),

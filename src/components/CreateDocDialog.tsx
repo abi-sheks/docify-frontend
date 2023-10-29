@@ -5,17 +5,17 @@ import { slugify } from '../utils/slugify';
 import { Doc } from '../interfaces';
 
 interface CreateDocProps {
-  readerList : Array<string>,
-  writerList : Array<string>,
-  docTitle : string,
-  id : string | undefined,
-  message : string,
-  hook : any,
-  isLoading : any
+  readerList: Array<string>,
+  writerList: Array<string>,
+  docTitle: string,
+  id: string | undefined,
+  message: string,
+  hook: any,
+  isLoading: any
 }
 
 const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading, message }: CreateDocProps) => {
-  let createMode : boolean = false
+  let createMode: boolean = false
   if (docTitle === '' || id === undefined) {
     createMode = true;
   }
@@ -71,8 +71,8 @@ const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading
         let slug
         if (createMode) {
           slug = slugify(title)
-          await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug}).unwrap().
-            then((response : any) => console.log(response))
+          await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug }).unwrap().
+            then((response: any) => console.log(response))
           setTitle('')
           setReaders([])
           setWriters([])
@@ -92,16 +92,22 @@ const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading
     }
   }
   return (
-    <>
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
       <Button variant='contained' onClick={handleOpen} sx={{
         // marginLeft: "3rem",
         // marginBottom: "4rem",
         width: "80%",
       }}>{message}</Button>
-      <Dialog open={open} onClose={handleCloseCancel}>
-        <DialogTitle>Create a new doc</DialogTitle>
+      <Dialog open={open} onClose={handleCloseCancel} fullWidth PaperProps={{
+        sx: {
+          height: '70%',
+          borderRadius: '1rem',
+          backgroundColor: '#262626'
+        }
+      }}>
+        <DialogTitle color='white' sx={{fontWeight : '300'}}>Create a new doc</DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText color='white' sx={{fontWeight : '100'}}>
             Enter the docs title
           </DialogContentText>
           <TextField
@@ -110,28 +116,32 @@ const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading
             label='Title...'
             value={title}
             fullWidth
-            variant='standard'
+            variant='outlined'
             onChange={handleTitleChange}
+            sx={{backgroundColor : 'white', borderRadius : '1rem'}}
           />
-          <DialogContentText>
+          <DialogContentText color='white' sx={{fontWeight : '100'}}>
             Choose which tags have access to read the document
           </DialogContentText>
           <Select multiple value={readers} onChange={handleReadersChange}>
             {tagList}
           </Select>
-          <DialogContentText>
+          <DialogContentText color='white' sx={{fontWeight : '100'}}>
             Choose which tags have access to edit the document
           </DialogContentText>
           <Select multiple value={writers} onChange={handleWritersChange}>
             {tagList}
           </Select>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{
+          displat : 'flex',
+          justifyContent : 'center',
+        }}>
           <Button variant='contained' onClick={handleCloseCancel}>Cancel</Button>
           <Button variant='contained' onClick={handleCloseSubmit}>Submit</Button>
         </DialogActions>
       </Dialog>
-    </>
+    </div>
   )
 }
 
