@@ -1,6 +1,7 @@
 import { Box, TextField, Container, Grid, Button, Typography, CssBaseline } from '@mui/material'
 import React, { useState } from 'react'
 import { useAddNewUserMutation } from '../features/api/apiSlice';
+import { StyledButton } from '../components';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { userAdded } from '../features/user/userSlice'
@@ -45,7 +46,7 @@ const RegisterScreen = () => {
             <CssBaseline />
             <Grid container>
                 <Grid item md={12} sx={{
-                    backgroundColor: "black",
+                    backgroundColor: "#006492",
                     height: "100vh",
                     display: "flex",
                     alignItems: "center",
@@ -58,9 +59,9 @@ const RegisterScreen = () => {
                         justifyContent: 'space-evenly',
                         height: '80%',
                         width: '60%',
-                        backgroundColor: "white",
+                        backgroundColor: "#fcfcff",
                     }}>
-                        <Typography variant="h5">Register here</Typography>
+                        <Typography color="#1a1c1e" variant="h5">Register here</Typography>
                         <TextField
                             margin='dense'
                             id='username'
@@ -99,8 +100,8 @@ const RegisterScreen = () => {
                             variant='outlined'
                             onChange={(e) => setRePassword(e.target.value)}
                         />
-                        <Button variant='contained' onClick={handleRegister}>Register</Button>
-                        <Typography color='red' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
+                        <StyledButton variant='contained' onClick={handleRegister}>Register</StyledButton>
+                        <Typography color='#ba1a1a' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
                     </Container>
                 </Grid>
             </Grid>

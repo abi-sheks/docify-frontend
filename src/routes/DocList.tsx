@@ -3,6 +3,7 @@ import { skipToken } from '@reduxjs/toolkit/query'
 import { useGetDocsQuery, useAddNewDocMutation, useEditDocMutation, useDeleteDocMutation, useGetDocSearchesQuery, useGetTagsQuery } from '../features/api/apiSlice'
 import { Link } from 'react-router-dom'
 import { Grid, Card, CardContent, CardActions, Typography, Button, IconButton, TextField, Container, CircularProgress, Select, MenuItem, SelectChangeEvent, Stack, Chip, Snackbar, Alert } from '@mui/material'
+import { StyledButton } from '../components'
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { Doc, Tag } from '../interfaces'
@@ -11,6 +12,7 @@ import { containsText } from '../utils/contains'
 import { tagInDoc } from '../utils/tagindoc'
 import { Zoom } from 'react-awesome-reveal'
 import { useSelector } from 'react-redux'
+import ErrorAlert from '../components/ErrorAlert'
 
 const DocList = () => {
   const currentUser = useSelector((state: any) => state.user)
@@ -116,8 +118,8 @@ const DocList = () => {
   const filterTags = filterState.map((tagName: string) => {
     return (
       <Chip key={tagName} variant='outlined' onDelete={() => handleFilterDelete(tagName)} label={tagName} sx={{
-        backgroundColor: "#262626",
-        color: 'white'
+        backgroundColor: "#eaddff",
+        color: '#201634'
       }}></Chip>
     )
   })
@@ -147,11 +149,14 @@ const DocList = () => {
       padding: '2rem',
       justifyContent: 'space-between',
       alignItems: "center",
+      backgroundColor : "#fcfcff",
       flexGrow: 1,
     }}>
       <Container>
         <Container>
-          <Grid container>
+          <Grid container sx={{
+            paddingBottom : '2rem',
+          }}>
             <Grid item md={12} sx={{
               marginBottom: '2rem',
               display: 'flex',
@@ -170,7 +175,7 @@ const DocList = () => {
                   backgroundColor: 'white',
                 }}
               />
-              <Button variant="contained" onClick={handleSearch} sx={{ marginLeft: '1rem' }}>Go</Button>
+              <StyledButton variant="contained" onClick={handleSearch} sx={{ marginLeft: '1rem' }}>Go</StyledButton>
             </Grid>
             <Grid item>
               <Container sx={{
@@ -179,9 +184,9 @@ const DocList = () => {
                 <Select multiple value={filterState} variant='outlined' renderValue={() => ''} onChange={handleFilterChange} sx={{ backgroundColor: 'white' }}>
                   {tagList}
                 </Select>
-                <Button variant='contained' onClick={handleFilter} sx={{ marginLeft: '1rem', }}>
+                <StyledButton variant='contained' onClick={handleFilter} sx={{ marginLeft: '1rem', }}>
                   Filter by tag
-                </Button>
+                </StyledButton>
               </Container>
               <Stack direction='row' spacing={2}>
                 {filterTags}
@@ -189,10 +194,10 @@ const DocList = () => {
             </Grid>
           </Grid>
           <Grid container spacing={4} sx={{
-            paddingTop: "4rem",
-            paddingLeft: '2rem',
+            padding: "2rem",
             overflow: 'auto',
-            maxHeight: '60vh',
+            maxHeight: '70vh',
+            backgroundColor : '#d3e5f5',
           }}>
             {docList}
           </Grid>
@@ -200,6 +205,7 @@ const DocList = () => {
       </Container>
       <Container sx={{
         display: 'flex',
+        paddingTop : '1rem',
         justifyContent: 'center'
       }}>
         <CreateDocDialog
@@ -212,14 +218,14 @@ const DocList = () => {
           canEditWriters={true}
         />
         <Snackbar open={fetchDocsErroredState} onClose={() => setFetchDocsErroredState(false)}>
-          <Alert severity="error">
+          <ErrorAlert severity="error">
             There was an error fetching the docs. Please try again.
-          </Alert>
+          </ErrorAlert>
         </Snackbar>
         <Snackbar open={searchDocsErroredState} onClose={() => setSearchDocsErroredState(false)}>
-          <Alert severity="error">
+          <ErrorAlert severity="error">
             There was an error fetching the docs by search. Please try again.
-          </Alert>
+          </ErrorAlert>
         </Snackbar>
       </Container>
     </div>

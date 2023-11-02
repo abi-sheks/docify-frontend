@@ -10,15 +10,24 @@ import { WebsocketProvider } from 'y-websocket';
 import 'quill/dist/quill.bubble.css'
 import { useParams } from 'react-router-dom';
 import Container from '@mui/material/Container';
-import { Button, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
+import { StyledButton } from '../components';
 import { Link } from 'react-router-dom';
-
-
+import { useSelector } from 'react-redux';
 
 const EditingScreen = () => {
+    const currentUser = useSelector((state: any) => state.user)
     const params = useParams()
     const docId: string | undefined = params.docId
-    const { data: doc, isFetching, isSuccess } = useGetDocQuery(docId as string)
+    const access: string | undefined = params.access
+    //bad paradigm probably
+    let isReadOnly: boolean = true
+    if (access === 'write') {
+        isReadOnly = false
+    }
+
+    const { data: doc, isFetching, isSuccess } = useGetDocQuery({ docId: docId as string, token: currentUser.token })
+
     // let docId : string = 'new'
     const [value, setValue] = useState<string>('');
     const quillRef: any = useRef<number>(0)
@@ -28,6 +37,7 @@ const EditingScreen = () => {
             modules: {
                 cursors: true,
             },
+            readOnly: isReadOnly,
             theme: 'bubble',
             placeholder: "Start editing",
         })
@@ -38,20 +48,30 @@ const EditingScreen = () => {
 
         return () => {
             provider.disconnect();
-
             // ReactDOM.unmountComponentAtNode(document.getElementById('editor') as Element)
         }
     }, [])
     return (
         <Container sx={{
-            height: '80%',
+            height: '100%',
+            backgroundColor: '#ffffff',
+            width: '80%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding : '2rem',
         }}>
-            <Typography variant='h3' color='white' sx={{ fontWeight: '100' }}>
+            <Typography variant='h3' color='#1a1c1e' sx={{ fontWeight: '100', marginBottom : '1rem' }}>
                 {isSuccess && doc.title}
             </Typography>
-            <div ref={quillRef} id="editor">
+            <div style={{
+                marginBottom : '1rem',
+            }} ref={quillRef} id="editor">
             </div>
-            <Button variant='contained' component={Link} to='/home/docs'>Back</Button>
+            <Button variant='contained' component={Link} to='/home/docs' sx={{
+                backgroundColor: '#006492',
+                color: '#ffffff'
+            }}>Back</Button>
         </Container>
     )
 }

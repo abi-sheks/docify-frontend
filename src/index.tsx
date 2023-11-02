@@ -52,7 +52,7 @@ const router = createBrowserRouter([
         ],
     },
     {
-        path: '/home/docs/:docId',
+        path: '/home/docs/:docId/:access',
         element: <EditingScreen />,
         errorElement: <ErrorPage />,
     }

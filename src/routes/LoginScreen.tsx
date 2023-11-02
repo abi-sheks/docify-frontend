@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Typography, CssBaseline, Grid, Container, Button, TextField } from '@mui/material';
+import { StyledButton } from '../components';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { userAdded } from '../features/user/userSlice';
@@ -73,7 +74,7 @@ const LoginScreen = () => {
             <Grid container sx={{ height: '100vh' }}>
 
                 <Grid item xs={0} md={7} sx={{
-                    backgroundColor: 'black',
+                    backgroundColor: '#006492',
                     display: 'flex',
                     flexDirection: "column",
                     alignItems: "center",
@@ -101,15 +102,16 @@ const LoginScreen = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: "center",
-                    backgroundColor: 'white',
+                    backgroundColor: '#fcfcff',
+                    padding : '2rem',
                 }}>
-                    <Container sx={{
+                    {/* <Container sx={{
                         height: "20%",
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: "center",
-                    }}>
-                        <Typography variant='h5' sx={{ fontWeight: "bolder", marginBottom: "4rem" }}>Get started with Channeli</Typography>
+                    }}> */}
+                        <Typography variant='h5' color='#1a1c1e' sx={{ fontWeight: "bolder", marginBottom: "4rem" }}>Get started with Channeli</Typography>
                         <TextField
                             margin='dense'
                             id='username'
@@ -138,13 +140,20 @@ const LoginScreen = () => {
                             variant='outlined'
                             onChange={handlePasswordChange}
                         />
-                        <Button
+                        <StyledButton
                             // component={Link} to='/home' variant='contained'
+                            sx={{
+                                marginTop : '1rem',
+                                marginBottom : '1rem',
+                            }}
                             variant='contained' onClick={handleLogin}
-                        >Login here</Button>
-                        <Button component={Link} to='/register'>New? Register here</Button>
-                        <Typography color='red' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
-                    </Container>
+                        >Login here</StyledButton>
+                        <Button component={Link} to='/register' variant='outlined' sx={{
+                            backgroundColor : '#ffffff',
+                            color : '#006492',
+                        }}>New? Register here</Button>
+                        <Typography color='#ba1a1a' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
+                    {/* </Container> */}
                 </Grid>
             </Grid>
         </div>

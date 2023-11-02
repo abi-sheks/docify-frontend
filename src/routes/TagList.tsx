@@ -2,12 +2,14 @@ import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { useGetTagsQuery, useAddNewTagMutation } from '../features/api/apiSlice';
 import { List, ListItem, ListItemText, Grid, Typography, ListItemButton, Button, Container, CircularProgress, TextField, CssBaseline, Snackbar, Alert } from '@mui/material';
+import { StyledButton } from '../components/';
 import { Link } from 'react-router-dom';
 import { CreateTagDialog } from '../components/';
 import { Tag } from '../interfaces';
 import { containsText } from '../utils/contains';
 import { Zoom } from 'react-awesome-reveal'
 import { useSelector } from 'react-redux';
+import ErrorAlert from '../components/ErrorAlert';
 
 const TagList = () => {
     const currentUser = useSelector((state: any) => state.user)
@@ -43,11 +45,14 @@ const TagList = () => {
     const tagList = TagSuccess && tagState.map((tag: Tag) => {
         if (tag.users.indexOf(currentUser.username) !== -1) {
             return (
-                <ListItem key={tag.id}>
+                <ListItem key={tag.id} sx={{
+                    backgroundColor : '#eaddff',
+                    borderRadius : '0.5rem',
+                }}>
                     <ListItemButton component={Link} to={tag.id}>
                         <CssBaseline />
                         <Zoom>
-                            <ListItemText sx={{ fontWeight: '100', color: 'white' }} primary={tag.name} />
+                            <ListItemText sx={{ fontWeight: '100', color: '#201634' }} primary={tag.name} />
                         </Zoom>
                     </ListItemButton>
                 </ListItem>
@@ -78,7 +83,7 @@ const TagList = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-around',
-                        marginBottom: '2rem',
+                        paddingBottom : '1rem',
                     }}>
                         <TextField
                             margin='dense'
@@ -90,24 +95,27 @@ const TagList = () => {
                             onChange={handleSearchBarChange}
                             sx={{ backgroundColor: 'white', borderRadius: '1rem' }}
                         />
-                        <Button variant="contained" onClick={handleSearch} sx={{
+                        <StyledButton variant="contained" onClick={handleSearch} sx={{
                             marginLeft: '1rem'
-                        }}>Go</Button>
+                        }}>Go</StyledButton>
                     </Container>
                     <Container sx={{
                         display: 'flex',
                         flexDirection: 'column',
+                        backgroundColor : '#d3e5f5',
+                        padding : '1rem',
+                        borderRadius : '1rem',
                     }}>
                         <Typography variant="h4" textAlign="center" color="white" sx={{
                             marginLeft: "2rem",
-                            fontWeight: "500",
+                            fontWeight: "300",
                             marginBottom: "2rem",
+                            color : "#0c1d29",
                         }}>Your tags</Typography>
                         <List sx={{
                             maxHeight: '60vh',
                             overflow: 'auto',
                             borderRadius: '1rem',
-                            border: '1px solid white'
                         }}>
                             {tagList}
                         </List>
@@ -127,9 +135,9 @@ const TagList = () => {
                         tag={undefined}
                     />
                     <Snackbar open={fetchTagsErroredState} onClose={() => setFetchTagsErroredState(false)}>
-                        <Alert severity="error">
+                        <ErrorAlert severity="error">
                             There was an error fetching the tags. Please try again.
-                        </Alert>
+                        </ErrorAlert>
                     </Snackbar>
                 </Container>
             </div>
@@ -138,7 +146,7 @@ const TagList = () => {
     }
 
     return (
-        <div style={{ flexGrow: 1, backgroundColor: 'black', height: '100%', width: '100%' }}>
+        <div style={{ flexGrow: 1, backgroundColor: '#fcfcff', height: '100%', width: '100%' }}>
             {content}
         </div>
     )

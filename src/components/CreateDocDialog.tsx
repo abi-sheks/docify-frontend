@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAddNewDocMutation, useGetTagsQuery } from '../features/api/apiSlice';
 import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent, Snackbar, Alert, Typography } from '@mui/material';
+import { StyledButton } from '.';
 import { slugify } from '../utils/slugify';
 import { Doc } from '../interfaces';
 import { useSelector } from 'react-redux';
+import ErrorAlert from './ErrorAlert';
 
 interface CreateDocProps {
   message: string,
@@ -131,23 +133,23 @@ const CreateDocDialog = ({hook, mutateErrored, isLoading, message, doc, canEditR
   let writeSelectDisplay = canEditWriters ? {display : 'block'} : {display : 'none'}
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <Button variant='contained' onClick={handleOpen} sx={{
+      <StyledButton variant='contained' onClick={handleOpen} sx={{
         // marginLeft: "3rem",
         // marginBottom: "4rem",
         width: "80%",
-      }}>{message}</Button>
+      }}>{message}</StyledButton>
       <Dialog open={open} onClose={handleCloseCancel} fullWidth PaperProps={{
         sx: {
           height: '70%',
           borderRadius: '1rem',
-          backgroundColor: '#262626'
+          backgroundColor: '#dde3ea'
         }
       }}>
-        <DialogTitle color='white' sx={{ fontWeight: '300' }}>Create a new doc</DialogTitle>
-        <DialogContent>
-          <DialogContentText color='white' sx={{ fontWeight: '100' }}>
+        <DialogTitle color='#41474d' sx={{ fontWeight: '300' }}>Create a new doc</DialogTitle>
+        <div style={{padding : '1rem'}}>
+          <Typography color='#41474d' sx={{ fontWeight: '100' }}>
             Enter the docs title
-          </DialogContentText>
+          </Typography>
           <TextField
             margin='dense'
             id='title'
@@ -156,40 +158,40 @@ const CreateDocDialog = ({hook, mutateErrored, isLoading, message, doc, canEditR
             fullWidth
             variant='outlined'
             onChange={handleTitleChange}
-            sx={{ backgroundColor: 'white', borderRadius: '1rem' }}
+            sx={{ backgroundColor: 'white'}}
           />
-          <DialogContentText display={canEditReaders ? 'block' : 'none'} color='white' sx={{ fontWeight: '100' }}>
+          <Typography display={canEditReaders ? 'block' : 'none'} color='#41474d' sx={{ fontWeight: '100' }}>
             Choose which tags have access to read the document
-          </DialogContentText>
+          </Typography>
           <Select multiple value={readers} onChange={handleReadersChange} sx={{ 
             ...readSelectDisplay,
             backgroundColor: 'white'
              }}>
             {tagList}
           </Select>
-          <DialogContentText display={canEditWriters ? 'block' : 'none'} color='white' sx={{ fontWeight: '100' }}>
+          <Typography display={canEditWriters ? 'block' : 'none'} color='#41474d' sx={{ fontWeight: '100' }}>
             Choose which tags have access to edit the document
-          </DialogContentText>
+          </Typography>
           <Select multiple value={writers} onChange={handleWritersChange} sx={{
             ...writeSelectDisplay,
              backgroundColor: 'white' }}>
             {tagList}
           </Select>
-        </DialogContent>
+        </div>
         <DialogActions sx={{
           displat: 'flex',
           justifyContent: 'center',
         }}>
-          <Button variant='contained' onClick={handleCloseCancel}>Cancel</Button>
-          <Button variant='contained' onClick={handleCloseSubmit}>Submit</Button>
+          <StyledButton variant='contained' onClick={handleCloseCancel}>Cancel</StyledButton>
+          <StyledButton variant='contained' onClick={handleCloseSubmit}>Submit</StyledButton>
         </DialogActions>
-        <Typography textAlign='center' display={titleEmpty ? 'none' : 'block'} color='red'>Please give your doc a name</Typography>
-        <Typography textAlign='center' display={tagsFetchErrored ? 'block' : 'none'} color='red'>There was an error fetching the tags</Typography>
+        <Typography textAlign='center' display={titleEmpty ? 'none' : 'block'} color='#ba1a1a'>Please give your doc a name</Typography>
+        <Typography textAlign='center' display={tagsFetchErrored ? 'block' : 'none'} color='#ba1a1a'>There was an error fetching the tags</Typography>
       </Dialog>
       <Snackbar open={mutationErroredState} onClose={() => setMutationErroredState(false)}>
-        <Alert severity="error">
+        <ErrorAlert severity='error'>
           There was an error creating the doc.
-        </Alert>
+        </ErrorAlert>
       </Snackbar>
     </div>
   )

@@ -2,9 +2,11 @@ import React from 'react'
 import { useState } from 'react';
 import { useAddNewTagMutation, useGetUsersQuery } from '../features/api/apiSlice';
 import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent, Typography, Snackbar, Alert } from '@mui/material';
+import { StyledButton } from '.';
 import { slugify } from '../utils/slugify';
 import { Tag } from '../interfaces';
 import { useSelector } from 'react-redux';
+import ErrorAlert from './ErrorAlert';
 //need to refactor these props but its a pain in the ass. bunch of undefined property reads will happen and need to be properly handled.
 interface CreateTagProps {
     hook: any,
@@ -111,21 +113,22 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
     let buttonDisplay = canMutate ? {display : 'block'} : {display : 'none'}
     return (
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <Button variant='contained' onClick={handleOpen} sx={{
+            <StyledButton variant='contained' onClick={handleOpen} sx={{
                 ...buttonDisplay,
                 marginLeft: "3rem",
                 width: "40%",
-            }} >{message}</Button>
+            }} >{message}</StyledButton>
             <Dialog open={open} onClose={handleCloseCancel} fullWidth PaperProps={{
                 sx: {
                     height: '70%',
                     borderRadius: '1rem',
-                    backgroundColor: '#262626',
+                    backgroundColor: '#dde3ea',
+                    padding : '1rem',
                 }
             }}>
-                <DialogTitle color='white' textAlign='center'>Create a new tag</DialogTitle>
+                <DialogTitle color='#41474d' textAlign='center'>Create a new tag</DialogTitle>
                 <DialogContent>
-                    <DialogContentText color='white'>
+                    <DialogContentText color='#41474d'>
                         Enter the name of your new tag
                     </DialogContentText>
                     <TextField
@@ -138,7 +141,7 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
                         onChange={handleNameChange}
                         sx={{ backgroundColor: 'white', borderRadius: '1rem' }}
                     />
-                    <DialogContentText color='white'>
+                    <DialogContentText color='#41474d'>
                         Add some members to your tag
                     </DialogContentText>
                     <Select multiple value={members} onChange={handleMemberChange} sx={{ backgroundColor: 'white' }}>
@@ -155,16 +158,16 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
                     display: "flex",
                     justifyContent: "center"
                 }}>
-                    <Button variant="contained" onClick={handleCloseCancel} disabled={isLoading}>Cancel</Button>
-                    <Button variant="contained" onClick={handleCloseSubmit} disabled={isLoading}>Submit</Button>
+                    <StyledButton variant="contained" onClick={handleCloseCancel} disabled={isLoading}>Cancel</StyledButton>
+                    <StyledButton variant="contained" onClick={handleCloseSubmit} disabled={isLoading}>Submit</StyledButton>
                 </DialogActions>
-                <Typography textAlign='center' display={nameEmpty ? 'none' : 'block'} color='red'>Please give your tag a name</Typography>
-                <Typography textAlign='center' display={userFetchErrored ? 'block' : 'none'} color='red'>There was an error fetching the users</Typography>
+                <Typography textAlign='center' display={nameEmpty ? 'none' : 'block'} color='#ba1a1a'>Please give your tag a name</Typography>
+                <Typography textAlign='center' display={userFetchErrored ? 'block' : 'none'} color='#ba1a1a'>There was an error fetching the users</Typography>
             </Dialog>
             <Snackbar open={mutationErroredState} onClose={() => setMutationErroredState(false)}>
-                <Alert severity="error">
+                <ErrorAlert severity="error">
                     There was an error creating the tag.
-                </Alert>
+                </ErrorAlert>
             </Snackbar>
         </div>
     )

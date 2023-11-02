@@ -3,6 +3,8 @@ import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, Di
 import { Doc } from '../interfaces';
 import React, { useState } from 'react'
 import { useSelector } from "react-redux";
+import { StyledButton } from ".";
+import ErrorAlert from "./ErrorAlert";
 
 interface DeleteDocProps {
     doc: Doc,
@@ -10,7 +12,7 @@ interface DeleteDocProps {
     deletionErrored: boolean
 }
 const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps) => {
-    const currentUser = useSelector((state : any) => state.user)
+    const currentUser = useSelector((state: any) => state.user)
     const [open, setOpen] = useState(false)
     const [deletionErroredState, setDeletionErroredState] = useState<boolean>(deletionErrored)
     const handleOpen = () => {
@@ -21,7 +23,7 @@ const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps)
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook({docId : doc.id, token : currentUser.token}).unwrap().then((response: any) =>
+            await deletionHook({ docId: doc.id, token: currentUser.token }).unwrap().then((response: any) =>
                 console.log(response)
             ).catch((error: any) => {
                 console.log(error)
@@ -33,35 +35,40 @@ const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps)
         setOpen(false)
     }
 
-    let iconDisplay = (doc.creator === currentUser.username) ? {display : 'block'} : {display : 'none'}
+    let iconDisplay = (doc.creator === currentUser.username) ? { display: 'block' } : { display: 'none' }
     return (
         <div>
             <Tooltip title="Delete">
                 <IconButton onClick={handleOpen} sx={{
                     ...iconDisplay,
-                     backgroundColor: 'white' 
-                     }}>
+                    color: '#ffffff',
+                }}>
                     <DeleteIcon />
                 </IconButton>
             </Tooltip>
-            <Dialog open={open} onClose={handleCloseCancel}>
-                <DialogTitle>Are you sure?</DialogTitle>
+            <Dialog open={open} onClose={handleCloseCancel} PaperProps={{
+                sx: {
+                    borderRadius: '1rem',
+                    backgroundColor: '#dde3ea'
+                }
+            }}>
+                <DialogTitle color="#41474d">Are you sure?</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    <DialogContentText color="#41474d">
                         <Typography>
                             Proceeding will permanently delete this document.
                         </Typography>
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant='contained' onClick={handleCloseCancel}>Cancel</Button>
-                    <Button variant='contained' onClick={handleCloseConfirm}>Confirm</Button>
+                    <StyledButton variant='contained' onClick={handleCloseCancel}>Cancel</StyledButton>
+                    <StyledButton variant='contained' onClick={handleCloseConfirm}>Confirm</StyledButton>
                 </DialogActions>
             </Dialog>
             <Snackbar open={deletionErroredState} onClose={() => setDeletionErroredState(false)}>
-                <Alert severity="error">
+                <ErrorAlert severity="error">
                     There was an error deleting the doc.
-                </Alert>
+                </ErrorAlert>
             </Snackbar>
         </div>
     )

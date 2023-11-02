@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGetTagQuery, useEditTagMutation, useDeleteTagMutation } from '../features/api/apiSlice';
 import { Card, CardContent, CardActions, Typography, Grid, Button, List, ListItemText, ListItem } from '@mui/material';
+import { StyledButton } from '../components';
 import { CreateTagDialog, DeleteTagDialog } from '../components';
 import { slugify } from '../utils/slugify';
 import { Tag } from '../interfaces';
@@ -15,8 +16,8 @@ const TagDetail = () => {
     const tagId: string | undefined = params.tagId
     const { data: tag, isFetching, isSuccess } = useGetTagQuery({ tagId: tagId as string, token: currentUser.token })
     const memberList = isSuccess && tag.users.map((username: string) => {
-        let nameText = username === tag.creator ? <Typography color='blue'>{`${username} : owner`}</Typography>
-            : <Typography>{`${username}`}</Typography>
+        let nameText = username === tag.creator ? <Typography color='#201634' sx={{fontWeight : '500'}}>{`${username} : owner`}</Typography>
+            : <Typography color="#201634">{`${username}`}</Typography>
         return (
             <ListItem>
                 <ListItemText sx={{ fontWeight: '100', color: 'white' }}>
@@ -40,6 +41,8 @@ const TagDetail = () => {
             }}>
                 <Button variant='contained' component={Link} to='/home/tags/' sx={{
                     marginTop: '2rem',
+                    backgroundColor: '#006492',
+                    color: '#ffffff'
                 }}>Back</Button>
                 <Card sx={{
                     marginTop: '2rem',
@@ -47,7 +50,7 @@ const TagDetail = () => {
                     height: '80%',
                     display: 'flex',
                     flexDirection: "column",
-                    backgroundColor: '#262626',
+                    backgroundColor: '#eaddff',
                     borderRadius: '1rem',
                     justifyContent: 'space-between',
                 }}>
@@ -55,7 +58,7 @@ const TagDetail = () => {
                         marginTop: '2rem',
                         padding: '1rem',
                     }}>
-                        <Typography variant="h5" color="white" textAlign="center" sx={{ fontWeight: '300' }}>
+                        <Typography variant="h5" color="#201634" textAlign="center" sx={{ fontWeight: '300' }}>
                             {tag.name}
                         </Typography>
                         <List sx={{ borderRadius: '1rem', border: '1px solid white', marginTop: '1rem', padding: '1rem' }}>
@@ -87,7 +90,7 @@ const TagDetail = () => {
         )
     }
     return (
-        <div style={{ height: '100%', width: '100%' }}>
+        <div style={{ height: '100%', width: '100%', backgroundColor : "#fcfcff" }}>
             {content}
         </div>
     )
