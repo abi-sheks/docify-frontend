@@ -1,26 +1,33 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { useGetTagsQuery, useAddNewTagMutation } from '../features/api/apiSlice';
-import { List, ListItem, ListItemText, Grid, Typography, ListItemButton, Button, Container, CircularProgress, TextField, CssBaseline} from '@mui/material';
+import { List, ListItem, ListItemText, Grid, Typography, ListItemButton, Button, Container, CircularProgress, TextField, CssBaseline, Snackbar, Alert } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { CreateTagDialog } from '../components/';
 import { Tag } from '../interfaces';
 import { containsText } from '../utils/contains';
-import {Zoom} from 'react-awesome-reveal'
+import { Zoom } from 'react-awesome-reveal'
+import { useSelector } from 'react-redux';
 
 const TagList = () => {
+    const currentUser = useSelector((state: any) => state.user)
     const {
         data: tags = [],
         isFetching,
         isSuccess: TagSuccess,
-    } = useGetTagsQuery()
-    const [addNewTag, { isLoading: MutateLoading }] = useAddNewTagMutation()
+        isError: fetchTagsErrored,
+    } = useGetTagsQuery(currentUser.token)
+    const [addNewTag, { isLoading: MutateLoading, isError: tagCreateErrored, error: tagCreateError }] = useAddNewTagMutation()
     const [search, setSearch] = useState<string>('')
+    const [fetchTagsErroredState, setFetchTagsErroredState] = useState<boolean>(fetchTagsErrored)
     const [tagState, setTagState] = useState<Array<Tag>>([])
 
     useEffect(() => {
         TagSuccess && setTagState(tags)
     }, [tags, TagSuccess])
+    useEffect(() => {
+        setFetchTagsErroredState(fetchTagsErrored)
+    }, [fetchTagsErrored])
     const handleSearchBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value)
         if (e.target.value === '') {
@@ -34,16 +41,18 @@ const TagList = () => {
     }
 
     const tagList = TagSuccess && tagState.map((tag: Tag) => {
-        return (
-            <ListItem key={tag.id}>
-                <ListItemButton component={Link} to={tag.id}>
-                    <CssBaseline />
-                    <Zoom>
-                    <ListItemText sx={{ fontWeight: '100', color: 'white' }} primary={tag.name} />
-                    </Zoom>
-                </ListItemButton>
-            </ListItem>
-        )
+        if (tag.users.indexOf(currentUser.username) !== -1) {
+            return (
+                <ListItem key={tag.id}>
+                    <ListItemButton component={Link} to={tag.id}>
+                        <CssBaseline />
+                        <Zoom>
+                            <ListItemText sx={{ fontWeight: '100', color: 'white' }} primary={tag.name} />
+                        </Zoom>
+                    </ListItemButton>
+                </ListItem>
+            )
+        }
     })
 
     let content
@@ -57,14 +66,6 @@ const TagList = () => {
     }
     else {
         content = (
-            // <Grid item xs={12} md={9} sx={{
-            //     display: 'flex',
-            //     flexDirection: "column",
-            //     justifyContent: "space-between",
-            //     paddingTop: "4rem",
-            //     paddingLeft: "6rem",
-            //     paddingRight: "6rem",
-            // }}>
             <div>
                 <CssBaseline />
                 <Container sx={{
@@ -105,39 +106,41 @@ const TagList = () => {
                         <List sx={{
                             maxHeight: '60vh',
                             overflow: 'auto',
-                            borderRadius : '1rem',
-                            border : '1px solid white'
+                            borderRadius: '1rem',
+                            border: '1px solid white'
                         }}>
                             {tagList}
                         </List>
                     </Container>
                 </Container>
                 <Container sx={{
-                    display : 'flex',
-                    alignItems  : "center",
-                    paddingTop : '1rem',
+                    display: 'flex',
+                    alignItems: "center",
+                    paddingTop: '1rem',
                 }}>
-                    <CreateTagDialog id={undefined} tagName='' memberList={[]} hook={addNewTag} isLoading={MutateLoading} message="Create Tag" />
+                    <CreateTagDialog
+                        hook={addNewTag}
+                        isLoading={MutateLoading}
+                        message="Create Tag"
+                        mutateErrored={tagCreateErrored}
+                        canMutate={true}
+                        tag={undefined}
+                    />
+                    <Snackbar open={fetchTagsErroredState} onClose={() => setFetchTagsErroredState(false)}>
+                        <Alert severity="error">
+                            There was an error fetching the tags. Please try again.
+                        </Alert>
+                    </Snackbar>
                 </Container>
-                {/* </Grid> */}
             </div>
 
         )
     }
 
     return (
-        // <Grid item xs={12} md={9} sx={{
-        //     display: 'flex',
-        //     flexDirection: "column",
-        //     justifyContent: "space-between",
-        //     paddingLeft: "6rem",
-        //     paddingRight: "6rem",
-        // }}>
-        <div style={{ flexGrow: 1, backgroundColor: 'black', height: '100%', width : '100%' }}>
+        <div style={{ flexGrow: 1, backgroundColor: 'black', height: '100%', width: '100%' }}>
             {content}
         </div>
-        // </Grid>
-
     )
 }
 

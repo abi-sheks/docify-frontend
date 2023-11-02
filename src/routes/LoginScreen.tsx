@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Typography, CssBaseline, Grid, Container, Button, TextField } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { userAdded } from '../features/users/userSlice';
+import { userAdded } from '../features/user/userSlice';
 import { useAddNewUserMutation } from '../features/api/apiSlice';
 import { Fade } from 'react-awesome-reveal';
 
@@ -14,28 +14,49 @@ const LoginScreen = () => {
     const [password, setPassword] = useState<string>('')
     const [email, setEmail] = useState<string>('')
     const [addNewUser, { isLoading }] = useAddNewUserMutation();
+    const [errorMessage, setErrorMessage] = useState<string>('')
+    const [isError, setIsError] = useState<boolean>(false)
     const dispatch = useDispatch()
     const canSave = [username, password, email].every(Boolean) && !isLoading
 
     const handleLogin = async () => {
-        // if(canSave) {
-        try {
-            // await addNewUser({username : username, password : password, email : email}).unwrap()
-            // .then((response : any) => console.log(response))
-            // setUsername('')
-            // setPassword('')
-            // setEmail('')
-            // dispatch(
-            //     userAdded({
-            //         username : username,
-            //         email : email,
-            //     })
-            // )
-            navigate('/home')
-        } catch (error) {
-            console.log(error)
+        if (canSave) {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'mode': 'no-cors',
+                    },
+                    body: JSON.stringify({ username: username, email: email, password: password })
+                })
+                const data = await response.json()
+                //weird paradigm, error is not being thrown to catch block? having to handle manually.
+                if (data.error) {
+                    setIsError(true)
+                    setErrorMessage(data.error)
+                    return;
+                }
+
+                console.log(data)
+                // await addNewUser({username : username, password : password, email : email}).unwrap()
+                // .then((response : any) => console.log(response))
+                setUsername('')
+                setPassword('')
+                setEmail('')
+                dispatch(
+                    userAdded({
+                        username: data.username,
+                        email: data.email,
+                        token : data.token,
+                    })
+                )
+                setIsError(false)
+                navigate('/home')
+            } catch (error: any) {
+                console.log(error)
+            }
         }
-        // }
     }
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUsername(e.target.value)
@@ -113,13 +134,16 @@ const LoginScreen = () => {
                             label='Password...'
                             value={password}
                             fullWidth
+                            type='password'
                             variant='outlined'
                             onChange={handlePasswordChange}
                         />
                         <Button
                             // component={Link} to='/home' variant='contained'
                             variant='contained' onClick={handleLogin}
-                        >Connect your Channeli account</Button>
+                        >Login here</Button>
+                        <Button component={Link} to='/register'>New? Register here</Button>
+                        <Typography color='red' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
                     </Container>
                 </Grid>
             </Grid>

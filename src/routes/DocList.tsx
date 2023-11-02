@@ -2,47 +2,58 @@ import React, { ChangeEvent, useEffect, useState } from 'react'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useGetDocsQuery, useAddNewDocMutation, useEditDocMutation, useDeleteDocMutation, useGetDocSearchesQuery, useGetTagsQuery } from '../features/api/apiSlice'
 import { Link } from 'react-router-dom'
-import { Grid, Card, CardContent, CardActions, Typography, Button, IconButton, TextField, Container, CircularProgress, Select, MenuItem, SelectChangeEvent, Stack, Chip } from '@mui/material'
+import { Grid, Card, CardContent, CardActions, Typography, Button, IconButton, TextField, Container, CircularProgress, Select, MenuItem, SelectChangeEvent, Stack, Chip, Snackbar, Alert } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { Doc, Tag } from '../interfaces'
-import { CreateDocDialog, DeleteDocDialog } from '../components'
+import { CreateDocDialog, DeleteDocDialog, DocCard } from '../components'
 import { containsText } from '../utils/contains'
 import { tagInDoc } from '../utils/tagindoc'
 import { Zoom } from 'react-awesome-reveal'
+import { useSelector } from 'react-redux'
 
 const DocList = () => {
+  const currentUser = useSelector((state: any) => state.user)
   const [docState, setDocState] = useState<Array<Doc>>([])
   const [search, setSearch] = useState<string>('')
   const [filterState, setFilterState] = useState<Array<string>>([])
-  const [updateDoc, { isLoading: DocEditLoading }] = useEditDocMutation()
-  const [addNewDoc, { isLoading: DocMutLoading }] = useAddNewDocMutation()
-  const [deleteDoc, { isLoading: DocDeleteLoading }] = useDeleteDocMutation()
+  const [updateDoc, { isLoading: docUpdateLoading, error: docUpdateError, isError: docUpdateErrored }] = useEditDocMutation()
+  const [addNewDoc, { isLoading: docCreateLoading, error: docCreateError, isError: docCreateErrored }] = useAddNewDocMutation()
+  const [deleteDoc, { isLoading: DocDeleteLoading, error: docDeleteError, isError: docDeleteErrored }] = useDeleteDocMutation()
   const {
     data: docs = [],
     isLoading,
     isFetching,
     isSuccess: DocSuccess,
-    isError,
+    isError: fetchDocsErrored,
     error
-  } = useGetDocsQuery()
+  } = useGetDocsQuery(currentUser.token)
 
   const {
     data: tags = [],
     isSuccess: TagSuccess
-  } = useGetTagsQuery()
+  } = useGetTagsQuery(currentUser.token)
 
   const {
     data: searched = [],
     isLoading: SearchLoading,
     isSuccess: SearchSuccess,
-    isError: SearchError,
+    isError: searchDocsErrored,
     isFetching: SearchFetching,
-  } = useGetDocSearchesQuery(search)
+  } = useGetDocSearchesQuery({ title__contains: search, token: currentUser.token })
+  const [fetchDocsErroredState, setFetchDocsErroredState] = useState<boolean>(fetchDocsErrored)
+  const [searchDocsErroredState, setSearchDocsErroredState] = useState<boolean>(searchDocsErrored)
+
 
   useEffect(() => {
     DocSuccess && setDocState(docs)
   }, [docs])
+  useEffect(() => {
+    setFetchDocsErroredState(fetchDocsErrored)
+  }, [fetchDocsErrored])
+  useEffect(() => {
+    setSearchDocsErroredState(searchDocsErrored)
+  }, [searchDocsErrored])
 
 
   const handleFilterChange = (e: SelectChangeEvent<string[]>) => {
@@ -113,35 +124,16 @@ const DocList = () => {
 
   const docList = DocSuccess && docState.map((doc: Doc) => {
     return (
-      <Grid item key={doc.id}>
-        <Zoom>
-          <Card sx={{
-            display: 'flex',
-            flexDirection: "column",
-            alignItems: 'center',
-            backgroundColor: '#262626',
-            borderRadius: '1rem',
-            padding: '1rem',
-          }}>
-            <CardContent>
-              <Typography variant='h5' color="white">
-                {doc.title}
-              </Typography>
-            </CardContent>
-            <CardActions sx={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-              <Button variant='contained' component={Link} to={doc.id} sx={{ marginRight: '0.5rem' }}>
-                Edit
-              </Button>
-              <CreateDocDialog hook={updateDoc} isLoading={DocEditLoading} docTitle={doc.title} readerList={doc.read_tags} writerList={doc.write_tags} id={doc.id} message="Update" />
-              <DeleteDocDialog doc={doc} deletionHook={deleteDoc} />
-            </CardActions>
-          </Card>
-        </Zoom >
-      </Grid>
+      <DocCard
+      //trust me i need this T-T
+        allTags={tags}
+        doc={doc}
+        hook={updateDoc}
+        isLoading={docUpdateLoading}
+        mutateErrored={docUpdateErrored}
+        deletionHook={deleteDoc}
+        deletionErrored={docDeleteErrored}
+      />
     )
   })
 
@@ -184,7 +176,7 @@ const DocList = () => {
               <Container sx={{
                 marginBottom: '1rem',
               }}>
-                <Select multiple value={filterState} renderValue={() => ''} onChange={handleFilterChange} sx={{ backgroundColor: '#262626' }}>
+                <Select multiple value={filterState} variant='outlined' renderValue={() => ''} onChange={handleFilterChange} sx={{ backgroundColor: 'white' }}>
                   {tagList}
                 </Select>
                 <Button variant='contained' onClick={handleFilter} sx={{ marginLeft: '1rem', }}>
@@ -210,7 +202,25 @@ const DocList = () => {
         display: 'flex',
         justifyContent: 'center'
       }}>
-        <CreateDocDialog readerList={[]} writerList={[]} docTitle='' hook={addNewDoc} isLoading={DocMutLoading} message="Create Doc" id={undefined} />
+        <CreateDocDialog
+          hook={addNewDoc}
+          isLoading={docCreateLoading}
+          message="Create Doc"
+          doc={undefined}
+          mutateErrored={docCreateErrored}
+          canEditReaders={true}
+          canEditWriters={true}
+        />
+        <Snackbar open={fetchDocsErroredState} onClose={() => setFetchDocsErroredState(false)}>
+          <Alert severity="error">
+            There was an error fetching the docs. Please try again.
+          </Alert>
+        </Snackbar>
+        <Snackbar open={searchDocsErroredState} onClose={() => setSearchDocsErroredState(false)}>
+          <Alert severity="error">
+            There was an error fetching the docs by search. Please try again.
+          </Alert>
+        </Snackbar>
       </Container>
     </div>
   )

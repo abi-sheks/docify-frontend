@@ -32,3 +32,6 @@ body {
 .MuiSelect-multiple {
     border: 1px solid white;
 }
+.MuiSelect-icon {
+    color : white;
+}
