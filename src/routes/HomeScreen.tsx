@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { Divider, CssBaseline, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Avatar, Grid, Container, Snackbar } from '@mui/material';
 import ArticleIcon from '@mui/icons-material/Article';
 import LabelIcon from '@mui/icons-material/Label';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 //Redux imports
 import { useSelector } from 'react-redux';
@@ -63,8 +64,11 @@ const HomeScreen = () => {
                 <CssBaseline />
                 <Container>
                     <Grid container>
-                        <Grid item md={4} sx={{ padding: "1rem" }}>
-                            <Avatar sx={{ bgcolor: "#65597b", color: '#ffffff' }}>AA</Avatar>
+                        <Grid item md={4} sx={{
+                            paddingTop: '2rem',
+                            paddingLeft: '2rem',
+                        }}>
+                            <AccountCircleIcon />
                         </Grid>
                         <Grid item md={8} sx={{
                             padding: "1rem",
