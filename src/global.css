@@ -3,6 +3,39 @@
 } */
 
 #editor {
-    border : 2px solid black;
+    color : white;
+    background-color: #dde3ea;
+    border: 1px solid #41474d;
+    color : #1a1c1e;
     height : 100%;
+    width : 100%;
+    margin : auto;
+}
+
+html {
+    height: 100%;
+    width:  100%;
+
+}
+body {
+    height: 100%;
+    width:  100%;
+
+}
+
+#root {
+    height: 100%;
+    width : 100%;
+
+}
+
+.MuiChip-deleteIcon {
+    color : white;
+    /* background-color: white; */
+}
+.MuiSelect-multiple {
+    border: 1px solid white;
+}
+.MuiSelect-icon {
+    color : white;
 }

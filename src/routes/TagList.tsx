@@ -1,29 +1,54 @@
-import React, { useEffect } from 'react';
-import { useState } from 'react';
+//Core react imports
+import React, { useEffect, useState } from 'react';
+
+//RTK Query imports
 import { useGetTagsQuery, useAddNewTagMutation } from '../features/api/apiSlice';
-import { List, ListItem, ListItemText, Grid, Typography, ListItemButton, Skeleton, Button, Container, CircularProgress } from '@mui/material';
-import { Dialog, DialogTitle, DialogContent, DialogContentText, TextField, Select, MenuItem, DialogActions } from '@mui/material';
-import { Link } from 'react-router-dom';
-import { CreateTagDialog } from '../components/';
+
+//Redux imports
+import { useSelector } from 'react-redux';
+//MUI imports
+import { List, Typography, Container, CircularProgress, TextField, CssBaseline, Snackbar } from '@mui/material';
+
+//component imports
+import { StyledButton, ErrorAlert } from '../components/';
+import { CreateTagDialog, TagCard } from '../components/';
+
+//interface imports
 import { Tag } from '../interfaces';
-import { containsText } from '../utils/contains';
+
+//utils imports
+import { containsText } from '../utils/';
+
 
 const TagList = () => {
+
+    //fetches user state and token
+    const currentUser = useSelector((state: any) => state.user)
+
+    //RTK Query hooks
     const {
         data: tags = [],
-        isLoading,
         isFetching,
         isSuccess: TagSuccess,
-        isError,
-        error
-    } = useGetTagsQuery()
-    const [addNewTag, { isLoading: MutateLoading }] = useAddNewTagMutation()
+        isError: fetchTagsErrored,
+    } = useGetTagsQuery(currentUser.token)
+    const [addNewTag, { isLoading: MutateLoading, isError: tagCreateErrored }] = useAddNewTagMutation()
+
+    //state (defined below queries as query info is used in state)
     const [search, setSearch] = useState<string>('')
+    const [fetchTagsErroredState, setFetchTagsErroredState] = useState<boolean>(fetchTagsErrored)
     const [tagState, setTagState] = useState<Array<Tag>>([])
 
+
+    //side effects
     useEffect(() => {
         TagSuccess && setTagState(tags)
-    }, [tags])
+    }, [tags, TagSuccess])
+    useEffect(() => {
+        setFetchTagsErroredState(fetchTagsErrored)
+    }, [fetchTagsErrored])
+
+    //Handlers
     const handleSearchBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value)
         if (e.target.value === '') {
@@ -36,83 +61,104 @@ const TagList = () => {
         setTagState(() => newTags)
     }
 
+
+    //List component
     const tagList = TagSuccess && tagState.map((tag: Tag) => {
-        return (
-            <ListItem key={tag.id}>
-                <ListItemButton component={Link} to={tag.id}>
-                    <ListItemText primary={tag.name}/>
-                </ListItemButton>
-            </ListItem>
-        )
+
+        if (tag.users.indexOf(currentUser.username) !== -1) {
+            return <TagCard tag={tag} />
+        }
     })
 
+    //content definition to handle loading
     let content
-
-       if(isFetching){
-                content =  (
-                    <Container>
-                    <CircularProgress />
-                    </Container>
-                )
-            }
-            else {
-                content =  (
-                    <Grid item xs={12} md={9} sx={{
+    if (isFetching) {
+        content = (
+            <Container>
+                <CircularProgress />
+            </Container>
+        )
+    }
+    else {
+        content = (
+            <div>
+                <CssBaseline />
+                <Container sx={{
+                    display: "flex",
+                    flexDirection: 'column',
+                    paddingTop: '2rem',
+                    justifyContent: "space-between",
+                }}>
+                    <Container sx={{
                         display: 'flex',
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        paddingTop: "4rem",
-                        paddingLeft: "6rem",
-                        paddingRight: "6rem",
+                        alignItems: 'center',
+                        justifyContent: 'space-around',
+                        paddingBottom: '1rem',
                     }}>
-                        <Container sx={{
-                            display : "flex",
-                            flexDirection : 'column',
-                            justifyContent : "space-between",
+                        <TextField
+                            margin='dense'
+                            id='search'
+                            label='Search for tags by name...'
+                            value={search}
+                            fullWidth
+                            variant='outlined'
+                            onChange={handleSearchBarChange}
+                            sx={{ backgroundColor: 'white', borderRadius: '1rem' }}
+                        />
+                        <StyledButton variant="contained" onClick={handleSearch} sx={{
+                            marginLeft: '1rem'
+                        }}>Go</StyledButton>
+                    </Container>
+                    <Container sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        backgroundColor: '#d3e5f5',
+                        padding: '1rem',
+                        borderRadius: '1rem',
+                    }}>
+                        <Typography variant="h4" textAlign="center" color="white" sx={{
+                            marginLeft: "2rem",
+                            fontWeight: "300",
+                            marginBottom: "2rem",
+                            color: "#0c1d29",
+                        }}>Your tags</Typography>
+                        <List sx={{
+                            maxHeight: '60vh',
+                            overflow: 'auto',
+                            borderRadius: '1rem',
                         }}>
-                            <Container sx ={{
-                                border : '1px solid black',
-                                marginBottom : '2rem',
-                            }}>
-                                <TextField
-                                    margin='dense'
-                                    id='search'
-                                    label='Search for tags by name...'
-                                    value={search}
-                                    fullWidth
-                                    variant='outlined'
-                                    onChange={handleSearchBarChange}
-                                    />
-                                <Button variant="contained" onClick={handleSearch}>Go</Button>
-                            </Container>
-                            <Container >
-                            <Typography variant="h4" sx={{
-                                marginLeft: "2rem",
-                                fontWeight: "bold",
-                                marginBottom: "2rem",
-                            }}>Your tags</Typography>
-                            <List>
-                                {tagList}
-                            </List>
-                        </Container>
-                        </Container>
-                        <CreateTagDialog id={undefined} tagName='' memberList={[]} hook={addNewTag} isLoading={MutateLoading} message="Create Tag" />
-                    </Grid>
+                            {tagList}
+                        </List>
+                    </Container>
+                </Container>
+                <Container sx={{
+                    display: 'flex',
+                    alignItems: "center",
+                    paddingTop: '1rem',
+                }}>
+                    <CreateTagDialog
+                        hook={addNewTag}
+                        isLoading={MutateLoading}
+                        message="Create Tag"
+                        mutateErrored={tagCreateErrored}
+                        canMutate={true}
+                        tag={undefined}
+                    />
+                    <Snackbar open={fetchTagsErroredState} onClose={() => setFetchTagsErroredState(false)}>
+                        <ErrorAlert severity="error">
+                            There was an error fetching the tags. Please try again.
+                        </ErrorAlert>
+                    </Snackbar>
+                </Container>
+            </div>
 
-                )
-            }
+        )
+    }
 
     return (
-            <Grid item xs={12} md={9} sx={{
-                display: 'flex',
-                flexDirection: "column",
-                justifyContent: "space-between",
-                paddingLeft: "6rem",
-                paddingRight: "6rem",
-            }}>
-                {content}
-            </Grid>
-        
+        <div style={{ flexGrow: 1, backgroundColor: '#fcfcff', height: '100%', width: '100%' }}>
+            {content}
+        </div>
     )
 }
 

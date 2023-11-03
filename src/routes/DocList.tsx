@@ -1,75 +1,112 @@
-import React, { ChangeEvent, useEffect, useState } from 'react'
-import { skipToken } from '@reduxjs/toolkit/query'
+//Core React imports
+import { ChangeEvent, useEffect, useState } from 'react'
+
+//RTK Query imports
 import { useGetDocsQuery, useAddNewDocMutation, useEditDocMutation, useDeleteDocMutation, useGetDocSearchesQuery, useGetTagsQuery } from '../features/api/apiSlice'
-import { Link } from 'react-router-dom'
-import { Grid, Card, CardContent, CardActions, Typography, Button, IconButton, TextField, Container, CircularProgress, Select, MenuItem, SelectChangeEvent, Stack, Chip } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import { Doc, Tag } from '../interfaces'
-import { CreateDocDialog, DeleteDocDialog } from '../components'
-import { containsText } from '../utils/contains'
-import { tagInDoc } from '../utils/tagindoc'
+
+//Redux imports
+import { useSelector } from 'react-redux'
+
+//MUI imports
+import { Grid, TextField, Container, Select, MenuItem, SelectChangeEvent, Stack, Snackbar } from '@mui/material'
+
+//Component imports
+import { StyledButton, ErrorAlert } from '../components'
+import { CreateDocDialog, DocCard, FilterChip } from '../components'
+
+//utils imports
+import { tagInDoc } from '../utils'
+
+//interfaces imports
+import { Doc } from '../interfaces'
+
 
 const DocList = () => {
-  const [docState, setDocState] = useState<Array<Doc>>([])
-  const [search, setSearch] = useState<string>('')
-  const [filterState, setFilterState] = useState<Array<string>>([])
-  const [updateDoc, { isLoading: DocEditLoading }] = useEditDocMutation()
-  const [addNewDoc, { isLoading: DocMutLoading }] = useAddNewDocMutation()
-  const [deleteDoc, { isLoading: DocDeleteLoading }] = useDeleteDocMutation()
+
+  //selector hook (holds token needed for API requests)
+  const currentUser = useSelector((state: any) => state.user)
+
+  //RTK Query hooks
+  const [updateDoc, { isLoading: docUpdateLoading, isError: docUpdateErrored }] = useEditDocMutation()
+  const [addNewDoc, { isLoading: docCreateLoading, isError: docCreateErrored }] = useAddNewDocMutation()
+  const [deleteDoc, { isError: docDeleteErrored }] = useDeleteDocMutation()
   const {
     data: docs = [],
-    isLoading,
-    isFetching,
     isSuccess: DocSuccess,
-    isError,
-    error
-  } = useGetDocsQuery()
-
+    isError: fetchDocsErrored,
+  } = useGetDocsQuery(currentUser.token)
   const {
     data: tags = [],
     isSuccess: TagSuccess
-  } = useGetTagsQuery()
+  } = useGetTagsQuery(currentUser.token)
 
+  //state
+  const [docState, setDocState] = useState<Array<Doc>>([])
+  const [searchState, setSearchState] = useState<string>('')
+  const [filterState, setFilterState] = useState<Array<string>>([])
+  const [fetchDocsErroredState, setFetchDocsErroredState] = useState<boolean>(fetchDocsErrored)
+
+  //Particular hook requires state to update and rerun
   const {
     data: searched = [],
-    isLoading: SearchLoading,
-    isSuccess: SearchSuccess,
-    isError: SearchError,
-    isFetching: SearchFetching,
-  } = useGetDocSearchesQuery(search)
+    isError: searchDocsErrored,
+  } = useGetDocSearchesQuery({ title__contains: searchState, token: currentUser.token })
 
+  //particular state requires error from above hook to setState
+  const [searchDocsErroredState, setSearchDocsErroredState] = useState<boolean>(searchDocsErrored)
+
+  //useEffects
   useEffect(() => {
     DocSuccess && setDocState(docs)
   }, [docs])
+  useEffect(() => {
+    setFetchDocsErroredState(fetchDocsErrored)
+  }, [fetchDocsErrored])
+  useEffect(() => {
+    setSearchDocsErroredState(searchDocsErrored)
+  }, [searchDocsErrored])
 
+  //event handlers
 
   const handleFilterChange = (e: SelectChangeEvent<string[]>) => {
     const { target: { value } } = e;
-    console.log(value)
-    if(value === '') {
-      setDocState(searched)
+    if (value === '') {
+      setDocState(docs)
     }
+    //handles case where only one value is selected, Select value is then string.
     setFilterState(typeof value === "string" ? value.split(',') : value);
   }
-  //Bad algorithm, refactor
   const handleFilter = () => {
-    if(filterState.length === 0){
+    if (filterState.length === 0) {
       setDocState(docs)
       return;
     }
-    let filteredDocs : any = []
-    searched.forEach((doc : Doc) => {
+    //Bad algorithm, refactor
+    //checks if every tag is in every doc, and also if the doc has already been added to filteredDocs to avoid duplication
+    let filteredDocs: Array<Doc> = []
+    docs.forEach((doc: Doc) => {
+      let match: boolean = true
       filterState.forEach((filterTag) => {
-        if(tagInDoc(doc, filterTag)){
-          filteredDocs = [...filteredDocs, doc]
+        if (!tagInDoc(doc, filterTag) || filteredDocs.indexOf(doc) !== -1) {
+          match = false
         }
       })
+      if (match) {
+        filteredDocs = [...filteredDocs, doc]
+      }
     })
     setDocState(filteredDocs)
   }
+  const handleFilterDelete = (tagName: string) => {
+    const newFilterTags: Array<string> = filterState.filter((filterTag: string) => filterTag !== tagName)
+    //handles when all tags are deleted, resets to default state.
+    if (newFilterTags.length === 0) {
+      setDocState(docs)
+    }
+    setFilterState(newFilterTags)
+  }
   const handleSearchBarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSearch((e.target).value)
+    setSearchState((e.target).value)
     if ((e.target).value === '') {
       setDocState(docs)
     }
@@ -86,100 +123,127 @@ const DocList = () => {
     })
     setDocState(() => newDocs)
   }
-  const tagList = TagSuccess && tags.map((tag: any) => {
-    return (
-      <MenuItem key={tag.id} value={tag.name}>{tag.name}</MenuItem>
-    )
-  })
-  const handleFilterDelete = (tagName: string) => {
-    // const tagName = 
-    // console.log(tagName)
-    const newFilterTags: Array<string> = filterState.filter((filterTag) => filterTag !== tagName)
-    if(newFilterTags.length === 0) {
-      setDocState(searched)
-    }
-    setFilterState(newFilterTags)
-  }
 
+  //List components
   const filterTags = filterState.map((tagName: string) => {
     return (
-      <Chip key={tagName} variant='outlined' onDelete={() => handleFilterDelete(tagName)} label={tagName}></Chip>
+      <FilterChip
+        tagName={tagName}
+        handleFilterDelete={handleFilterDelete}
+      />
     )
   })
-
+  const tagList = TagSuccess && tags.map((tag: any) => {
+    return (
+      <MenuItem key={tag.id} value={tag.name}>
+        {tag.name}
+      </MenuItem>
+    )
+  })
   const docList = DocSuccess && docState.map((doc: Doc) => {
     return (
-      <Card sx={{
-        display: 'flex',
-        flexDirection: "column",
-        alignItems: 'center',
-      }} key={doc.id}>
-        <CardContent>
-          <Typography variant='h5'>
-            {doc.title}
-          </Typography>
-        </CardContent>
-        <CardActions>
-          <Button variant='contained' component={Link} to={doc.id}>
-            Edit
-          </Button>
-          <CreateDocDialog hook={updateDoc} isLoading={DocEditLoading} docTitle={doc.title} readerList={doc.read_tags} writerList={doc.write_tags} id={doc.id} message="Update" />
-          <DeleteDocDialog doc={doc} deletionHook={deleteDoc} />
-        </CardActions>
-      </Card>
-      // </Grid>
+      <DocCard
+        //trust me i need this T-T
+        allTags={tags}
+        doc={doc}
+        hook={updateDoc}
+        isLoading={docUpdateLoading}
+        mutateErrored={docUpdateErrored}
+        deletionHook={deleteDoc}
+        deletionErrored={docDeleteErrored}
+      />
     )
   })
 
-
   return (
-    <Grid item xs={12} md={9} sx={{
+    <div style={{
       display: 'flex',
       flexDirection: "column",
-      justifyContent: "space-between",
+      width: '100%',
+      height: '100%',
+      padding: '2rem',
+      justifyContent: 'space-between',
       alignItems: "center",
+      backgroundColor: "#fcfcff",
+      flexGrow: 1,
     }}>
       <Container>
-        <Grid item container>
-          <Grid item md={12}  sx={{
-          marginBottom : '2rem',
-        }}>
-            <TextField
-              margin='dense'
-              id='search'
-              label='Search for docs by title...'
-              value={search}
-              fullWidth
-              variant='outlined'
-              onChange={handleSearchBarChange}
-              sx={{
-                borderRadius: "2rem",
-              }}
-            />
-            <Button variant="contained" onClick={handleSearch}>Go</Button>
-]
+        <Container>
+          <Grid container sx={{
+            paddingBottom: '2rem',
+          }}>
+            <Grid item md={12} sx={{
+              marginBottom: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+            }}>
+              <TextField
+                margin='dense'
+                id='search'
+                label='Search for docs by title...'
+                value={searchState}
+                fullWidth
+                variant='outlined'
+                onChange={handleSearchBarChange}
+                sx={{
+                  borderRadius: "1rem",
+                  backgroundColor: 'white',
+                }}
+              />
+              <StyledButton variant="contained" onClick={handleSearch} sx={{ marginLeft: '1rem' }}>Go</StyledButton>
+            </Grid>
+            <Grid item>
+              <Container sx={{
+                marginBottom: '1rem',
+              }}>
+                <Select multiple value={filterState} variant='outlined' renderValue={() => ''} onChange={handleFilterChange} sx={{ backgroundColor: 'white' }}>
+                  {tagList}
+                </Select>
+                <StyledButton variant='contained' onClick={handleFilter} sx={{ marginLeft: '1rem', }}>
+                  Filter by tag
+                </StyledButton>
+              </Container>
+              <Stack direction='row' spacing={2}>
+                {filterTags}
+              </Stack>
+            </Grid>
           </Grid>
-          <Grid item>
-            <Select multiple value={filterState} renderValue={() => ''} onChange={handleFilterChange}>
-              {tagList}
-            </Select>
-            <Button variant='contained' onClick={handleFilter}>
-              Filter by tag
-            </Button>
-          <Stack direction='row' spacing={2}>
-            {filterTags}
-          </Stack>
+          <Grid container spacing={4} sx={{
+            padding: "2rem",
+            overflow: 'auto',
+            maxHeight: '70vh',
+            backgroundColor: '#d3e5f5',
+          }}>
+            {docList}
           </Grid>
-        </Grid>
-        <Grid container spacing={4} sx={{
-          paddingTop: "4rem",
-          paddingLeft: '10%',
-        }}>
-          {docList}
-        </Grid>
+        </Container>
       </Container>
-      <CreateDocDialog readerList={[]} writerList={[]} docTitle='' hook={addNewDoc} isLoading={DocMutLoading} message="Create Doc" id={undefined} />
-    </Grid>
+      <Container sx={{
+        display: 'flex',
+        paddingTop: '1rem',
+        justifyContent: 'center'
+      }}>
+        <CreateDocDialog
+          hook={addNewDoc}
+          isLoading={docCreateLoading}
+          message="Create Doc"
+          doc={undefined}
+          mutateErrored={docCreateErrored}
+          canEditReaders={true}
+          canEditWriters={true}
+        />
+        <Snackbar open={fetchDocsErroredState} onClose={() => setFetchDocsErroredState(false)}>
+          <ErrorAlert severity="error">
+            There was an error fetching the docs. Please try again.
+          </ErrorAlert>
+        </Snackbar>
+        <Snackbar open={searchDocsErroredState} onClose={() => setSearchDocsErroredState(false)}>
+          <ErrorAlert severity="error">
+            There was an error fetching the docs by search. Please try again.
+          </ErrorAlert>
+        </Snackbar>
+      </Container>
+    </div>
   )
 }
 

@@ -1,137 +1,215 @@
+//React import
 import React, { useState } from 'react';
-import { useAddNewDocMutation, useGetTagsQuery } from '../features/api/apiSlice';
-import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent } from '@mui/material';
-import { slugify } from '../utils/slugify';
-import { Doc } from '../interfaces';
 
-interface CreateDocProps {
-  readerList : Array<string>,
-  writerList : Array<string>,
-  docTitle : string,
-  id : string | undefined,
-  message : string,
-  hook : any,
-  isLoading : any
-}
+//RTK Query import
+import { useGetTagsQuery } from '../features/api/apiSlice';
 
-const CreateDocDialog = ({ readerList, writerList, docTitle, id, hook, isLoading, message }: CreateDocProps) => {
-  let createMode : boolean = false
-  if (docTitle === '' || id === undefined) {
+//Redux imports
+import { useSelector } from 'react-redux';
+
+//MUI import
+import { Dialog, DialogTitle, DialogActions, TextField, Select, MenuItem, SelectChangeEvent, Snackbar, Typography } from '@mui/material';
+
+//components imports
+import { StyledButton, ErrorAlert } from '.';
+
+//utils import
+import { slugify } from '../utils';
+
+//interfaces import
+import { CreateDocProps } from '../interfaces'
+
+
+const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEditReaders, canEditWriters }: CreateDocProps) => {
+
+  //user state for token
+  const currentUser = useSelector((state: any) => state.user)
+
+  //silly top level logic
+  let createMode: boolean = false
+
+  if (!doc) {
     createMode = true;
   }
-  const oldSlug = docTitle != '' ? slugify(docTitle) : undefined;
-  // const oldSlug = slugify(docTitle)
-  const [open, setOpen] = useState<boolean>(false)
-  const [title, setTitle] = useState<string>('')
-  const [readers, setReaders] = useState<string[]>([])
-  const [writers, setWriters] = useState<string[]>([])
+  if (createMode) {
+    canEditWriters = true
+    canEditReaders = true
+  }
 
+  let oldSlug: string | undefined
+  if (!doc) {
+    oldSlug = undefined
+  }
+  else {
+    oldSlug = slugify(doc.title)
+  }
 
-  const canSave = [title].every(Boolean) && !isLoading
+  //state
+  const [openState, setOpenState] = useState<boolean>(false)
+  const [titleState, setTitleState] = useState<string>('')
+  const [readersState, setReadersState] = useState<string[]>([])
+  const [writersState, setWritersState] = useState<string[]>([])
+  const [mutationErroredState, setMutationErroredState] = useState<boolean>(mutateErrored)
 
+  //RTK Query hooks
   const {
     data: tags = [],
-    isLoading: TagLoading,
-    isFetching,
     isSuccess,
-    isError,
-    error
-  } = useGetTagsQuery()
+    isError: tagsFetchErrored,
+  } = useGetTagsQuery(currentUser.token)
 
+  //Submission check
+  const titleEmpty = [titleState].every(Boolean)
+  const canSave = titleEmpty && !isLoading
+
+  //List component
   const tagList = isSuccess && tags.map((tag: any) => {
     return (
       <MenuItem key={tag.id} value={tag.name}>{tag.name}</MenuItem>
     )
   })
 
+  //Handlers
   const handleOpen = () => {
-    setReaders(readerList)
-    setWriters(writerList)
-    setTitle(docTitle)
-    setOpen(true)
+    if (!doc) {
+      setReadersState([])
+      setWritersState([])
+      setTitleState('')
+    }
+    else {
+      setReadersState(doc.read_tags)
+      setWritersState(doc.write_tags)
+      setTitleState(doc.title)
+    }
+    setOpenState(true)
   }
   const handleCloseCancel = () => {
-    setOpen(false);
+    setOpenState(false);
   }
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(e.target.value);
+    setTitleState(e.target.value);
   }
   const handleReadersChange = (e: SelectChangeEvent<string[]>) => {
     const { target: { value } } = e;
-    setReaders(typeof value === "string" ? value.split(',') : value);
+    setReadersState(typeof value === "string" ? value.split(',') : value);
   }
   const handleWritersChange = (e: SelectChangeEvent<string[]>) => {
     const { target: { value } } = e;
     const currWriters = typeof value === "string" ? value.split(',') : value
-    setWriters(currWriters);
+    let readersJustAdded: Array<string> = []
+    currWriters.forEach((writer: string) => {
+      if (readersState.indexOf(writer) === -1) {
+        readersJustAdded.push(writer)
+      }
+    })
+    let newReaders = [...readersState, ...readersJustAdded]
+    setWritersState(currWriters);
+    setReadersState(newReaders)
   }
   const handleCloseSubmit = async () => {
     if (canSave) {
       try {
         let slug
         if (createMode) {
-          slug = slugify(title)
-          await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug}).unwrap().
-            then((response : any) => console.log(response))
-          setTitle('')
-          setReaders([])
-          setWriters([])
+
+          slug = slugify(titleState)
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username }, token: currentUser.token }).unwrap().
+            then((response: any) => {
+              setReadersState([])
+              setWritersState([])
+            }).catch((error: any) => {
+              setMutationErroredState(true)
+            })
         } else {
+
           slug = oldSlug
-          await hook({ title: title, read_tags: readers, write_tags: writers, slug: slug, id: id }).unwrap().
-            then((response: any) => console.log(response))
-          setTitle('')
-          setReaders([])
-          setWriters([])
+          //doc? works because doc must exist for this to run
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, id: doc?.id, creator: doc?.creator }, token: currentUser.token }).unwrap().
+            then((response: any) => {
+              console.log(response)
+              setReadersState([])
+              setWritersState([])
+            }).catch((error: any) => {
+              setMutationErroredState(true)
+            })
         }
       }
       catch (error) {
         console.log(error)
       }
-      setOpen(false)
+      setOpenState(false)
     }
   }
+
+  //Component display check
+  let readSelectDisplay = canEditReaders ? { display: 'block' } : { display: 'none' }
+  let writeSelectDisplay = canEditWriters ? { display: 'block' } : { display: 'none' }
+
+
   return (
-    <>
-      <Button variant='contained' onClick={handleOpen} sx={{
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+      <StyledButton variant='contained' onClick={handleOpen} sx={{
         // marginLeft: "3rem",
         // marginBottom: "4rem",
         width: "80%",
-      }}>{message}</Button>
-      <Dialog open={open} onClose={handleCloseCancel}>
-        <DialogTitle>Create a new doc</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
+      }}>{message}</StyledButton>
+      <Dialog open={openState} onClose={handleCloseCancel} fullWidth PaperProps={{
+        sx: {
+          height: '70%',
+          borderRadius: '1rem',
+          backgroundColor: '#dde3ea'
+        }
+      }}>
+        <DialogTitle color='#41474d' sx={{ fontWeight: '300' }}>Create a new doc</DialogTitle>
+        <div style={{ padding: '1rem' }}>
+          <Typography color='#41474d' sx={{ fontWeight: '100' }}>
             Enter the docs title
-          </DialogContentText>
+          </Typography>
           <TextField
             margin='dense'
             id='title'
             label='Title...'
-            value={title}
+            value={titleState}
             fullWidth
-            variant='standard'
+            variant='outlined'
             onChange={handleTitleChange}
+            sx={{ backgroundColor: 'white' }}
           />
-          <DialogContentText>
+          <Typography display={canEditReaders ? 'block' : 'none'} color='#41474d' sx={{ fontWeight: '100' }}>
             Choose which tags have access to read the document
-          </DialogContentText>
-          <Select multiple value={readers} onChange={handleReadersChange}>
+          </Typography>
+          <Select multiple value={readersState} onChange={handleReadersChange} sx={{
+            ...readSelectDisplay,
+            backgroundColor: 'white'
+          }}>
             {tagList}
           </Select>
-          <DialogContentText>
+          <Typography display={canEditWriters ? 'block' : 'none'} color='#41474d' sx={{ fontWeight: '100' }}>
             Choose which tags have access to edit the document
-          </DialogContentText>
-          <Select multiple value={writers} onChange={handleWritersChange}>
+          </Typography>
+          <Select multiple value={writersState} onChange={handleWritersChange} sx={{
+            ...writeSelectDisplay,
+            backgroundColor: 'white'
+          }}>
             {tagList}
           </Select>
-        </DialogContent>
-        <DialogActions>
-          <Button variant='contained' onClick={handleCloseCancel}>Cancel</Button>
-          <Button variant='contained' onClick={handleCloseSubmit}>Submit</Button>
+        </div>
+        <DialogActions sx={{
+          displat: 'flex',
+          justifyContent: 'center',
+        }}>
+          <StyledButton variant='contained' onClick={handleCloseCancel}>Cancel</StyledButton>
+          <StyledButton variant='contained' onClick={handleCloseSubmit}>Submit</StyledButton>
         </DialogActions>
+        <Typography textAlign='center' display={titleEmpty ? 'none' : 'block'} color='#ba1a1a'>Please give your doc a name</Typography>
+        <Typography textAlign='center' display={tagsFetchErrored ? 'block' : 'none'} color='#ba1a1a'>There was an error fetching the tags</Typography>
       </Dialog>
-    </>
+      <Snackbar open={mutationErroredState} onClose={() => setMutationErroredState(false)}>
+        <ErrorAlert severity='error'>
+          There was an error creating the doc.
+        </ErrorAlert>
+      </Snackbar>
+    </div>
   )
 }
 

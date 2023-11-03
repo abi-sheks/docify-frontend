@@ -1,50 +1,87 @@
-import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Typography, Tooltip } from '@mui/material';
-import {Doc} from '../interfaces';
-import React, { useState } from 'react'
+//React core imports
+import { useState } from 'react'
 
-interface DeleteDocProps{
-    doc : Doc,
-    deletionHook : any,
-}
-const DeleteDocDialog = ({ doc, deletionHook }: DeleteDocProps) => {
-    const [open, setOpen] = useState(false)
+//MUI imports
+import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Tooltip, Snackbar } from '@mui/material';
+import DeleteIcon from "@mui/icons-material/Delete";
+
+//Redux imports
+import { useSelector } from "react-redux";
+
+//Components imports
+import { StyledButton, ErrorAlert } from ".";
+
+//interfaces imports
+import { DeleteDocProps } from '../interfaces'
+
+const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps) => {
+
+    //fetches user token
+    const currentUser = useSelector((state: any) => state.user)
+
+    //state
+    const [openState, setOpenState] = useState<boolean>(false)
+    const [deletionErroredState, setDeletionErroredState] = useState<boolean>(deletionErrored)
+
+    //Handlers
     const handleOpen = () => {
-        setOpen(true)
+        setOpenState(true)
     }
     const handleCloseCancel = () => {
-        setOpen(false)
+        setOpenState(false)
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook(doc.id).unwrap().then((response : any) => console.log(response)).catch((error : any) => console.log(error))
+            await deletionHook({ docId: doc.id, token: currentUser.token }).unwrap().then((response: any) => {}
+            ).catch((error: any) => {
+                console.log(error)
+                setDeletionErroredState(true)
+            })
         } catch (err) {
             console.error(err)
         }
-        setOpen(false)
+        setOpenState(false)
     }
+
+    //render condition
+    let iconDisplay = (doc.creator === currentUser.username) ? { display: 'block' } : { display: 'none' }
+
+    
     return (
-        <>
+        <div>
             <Tooltip title="Delete">
-            <IconButton onClick={handleOpen}>
-                <DeleteIcon />
-            </IconButton>
+                <IconButton onClick={handleOpen} sx={{
+                    ...iconDisplay,
+                    color: '#ffffff',
+                }}>
+                    <DeleteIcon />
+                </IconButton>
             </Tooltip>
-            <Dialog open ={open} onClose={handleCloseCancel}>
-                <DialogTitle>Are you sure?</DialogTitle>
+            <Dialog open={openState} onClose={handleCloseCancel} PaperProps={{
+                sx: {
+                    borderRadius: '1rem',
+                    backgroundColor: '#dde3ea'
+                }
+            }}>
+                <DialogTitle color="#41474d">Are you sure?</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
+                    <DialogContentText color="#41474d">
                         <Typography>
-                        Proceeding will permanently delete this document.
+                            Proceeding will permanently delete this document.
                         </Typography>
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button variant='contained' onClick={handleCloseCancel}>Cancel</Button>
-                    <Button variant='contained' onClick={handleCloseConfirm}>Confirm</Button>
+                    <StyledButton variant='contained' onClick={handleCloseCancel}>Cancel</StyledButton>
+                    <StyledButton variant='contained' onClick={handleCloseConfirm}>Confirm</StyledButton>
                 </DialogActions>
             </Dialog>
-        </>
+            <Snackbar open={deletionErroredState} onClose={() => setDeletionErroredState(false)}>
+                <ErrorAlert severity="error">
+                    There was an error deleting the doc.
+                </ErrorAlert>
+            </Snackbar>
+        </div>
     )
 }
 

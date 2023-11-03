@@ -4,4 +4,5 @@ export default interface Doc{
   read_tags : Array<string>,
   write_tags : Array<string>,
   slug : string,
+  creator : string,
 }

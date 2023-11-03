@@ -1,4 +1,4 @@
-export function slugify(input : any) {
+function slugify(input : any) {
     if (!input)
         return '';
 
@@ -16,3 +16,5 @@ export function slugify(input : any) {
 
     return slug;
 }
+
+export default slugify;
