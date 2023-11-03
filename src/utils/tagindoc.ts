@@ -1,6 +1,6 @@
 import { Doc } from "../interfaces"
 
-export const tagInDoc = (doc : Doc, tagName : string): boolean => {
+const tagInDoc = (doc : Doc, tagName : string): boolean => {
     let match : boolean = false
     doc.read_tags.forEach((readTag) => {
         if (readTag === tagName) {
@@ -14,3 +14,5 @@ export const tagInDoc = (doc : Doc, tagName : string): boolean => {
     })
     return match
 }
+
+export default tagInDoc;

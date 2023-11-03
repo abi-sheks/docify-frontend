@@ -1,10 +1,20 @@
-import React from 'react'
+//interfaces imports
 import { Doc, Tag } from '../interfaces'
+
+//MUI imports
 import { Grid, Card, CardContent, Typography, CardActions, Button } from '@mui/material';
+
+//React router imports
 import { Link } from 'react-router-dom';
-import { Zoom } from 'react-awesome-reveal';
+
+//Redux imports
 import { useSelector } from 'react-redux';
-import { StyledButton, DeleteDocDialog, CreateDocDialog } from '.';
+
+//components imports
+import { DeleteDocDialog, CreateDocDialog } from '.';
+
+//Misc imports
+import { Zoom } from 'react-awesome-reveal';
 
 interface DocCardProps {
     doc: Doc,
@@ -17,14 +27,18 @@ interface DocCardProps {
 }
 
 const DocCard = ({ doc, deletionHook, hook, isLoading, deletionErrored, mutateErrored, allTags }: DocCardProps) => {
+
+    //fetches user token
     const currentUser = useSelector((state: any) => state.user)
+
+    //Top level logic to check access
     let canEditReaders: boolean = false
     let canEditWriters: boolean = false
     allTags.forEach((tag: Tag) => {
-        if ((doc.read_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username)) || doc.creator === currentUser.username) {
+        if ((doc.read_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username) !== -1) || doc.creator === currentUser.username) {
             canEditReaders = true
         }
-        if ((doc.write_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username)) || doc.creator === currentUser.username) {
+        if ((doc.write_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username) !== -1) || doc.creator === currentUser.username) {
             canEditWriters = true
         }
     })
@@ -32,6 +46,8 @@ const DocCard = ({ doc, deletionHook, hook, isLoading, deletionErrored, mutateEr
     if (canEditWriters) {
         editAccess = 'write'
     }
+
+    
     return (
         <Grid item key={doc.id}>
             <Zoom>

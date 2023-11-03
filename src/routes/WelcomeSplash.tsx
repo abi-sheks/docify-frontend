@@ -1,7 +1,12 @@
-import { CssBaseline, Grid, Typography } from '@mui/material';
+//MUI imports
+import { CssBaseline, Typography } from '@mui/material';
+
+//misc import
 import { Fade } from 'react-awesome-reveal';
 
 const WelcomeSplash = () => {
+
+  //Static screen
   return (
     <div style={{ height: '100%', flexGrow: 1, backgroundColor: '#fcfcff', paddingTop: '4rem' }}>
       <CssBaseline />

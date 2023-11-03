@@ -1,26 +1,42 @@
+//Core react imports
 import React, { useState } from 'react'
-import { Typography, CssBaseline, Grid, Container, Button, TextField } from '@mui/material';
-import { StyledButton } from '../components';
-import { Link, useNavigate } from 'react-router-dom';
+
+//Redux imports
 import { useDispatch } from 'react-redux';
 import { userAdded } from '../features/user/userSlice';
-import { useAddNewUserMutation } from '../features/api/apiSlice';
+
+//React Router imports
+import { Link, useNavigate } from 'react-router-dom';
+
+//MUI imports
+import { Typography, CssBaseline, Grid, Container, Button, TextField } from '@mui/material';
+
+//Components imports
+import { StyledButton } from '../components';
+
+//Misc imports
 import { Fade } from 'react-awesome-reveal';
 
 
 
 const LoginScreen = () => {
-    const navigate = useNavigate()
-    const [username, setUsername] = useState<string>('')
-    const [password, setPassword] = useState<string>('')
-    const [email, setEmail] = useState<string>('')
-    const [addNewUser, { isLoading }] = useAddNewUserMutation();
-    const [errorMessage, setErrorMessage] = useState<string>('')
-    const [isError, setIsError] = useState<boolean>(false)
-    const dispatch = useDispatch()
-    const canSave = [username, password, email].every(Boolean) && !isLoading
 
+    //misc hooks
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+
+    //state
+    const [usernameState, setUsernameState] = useState<string>('')
+    const [passwordState, setPasswordState] = useState<string>('')
+    const [emailState, setEmailState] = useState<string>('')
+    const [errorMessageState, setErrorMessageState] = useState<string>('')
+    const [isErrorState, setIsErrorState] = useState<boolean>(false)
+
+    const canSave = [usernameState, passwordState, emailState].every(Boolean)
+
+    //Handlers
     const handleLogin = async () => {
+
         if (canSave) {
             try {
                 const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
@@ -29,45 +45,47 @@ const LoginScreen = () => {
                         'Content-type': 'application/json',
                         'mode': 'no-cors',
                     },
-                    body: JSON.stringify({ username: username, email: email, password: password })
+                    body: JSON.stringify({ username: usernameState, email: emailState, password: passwordState })
                 })
                 const data = await response.json()
+
                 //weird paradigm, error is not being thrown to catch block? having to handle manually.
                 if (data.error) {
-                    setIsError(true)
-                    setErrorMessage(data.error)
+                    console.log(data.error)
+                    setIsErrorState(true)
+                    setErrorMessageState(data.error)
                     return;
                 }
 
-                console.log(data)
-                // await addNewUser({username : username, password : password, email : email}).unwrap()
-                // .then((response : any) => console.log(response))
-                setUsername('')
-                setPassword('')
-                setEmail('')
+                setUsernameState('')
+                setPasswordState('')
+                setEmailState('')
                 dispatch(
                     userAdded({
                         username: data.username,
                         email: data.email,
-                        token : data.token,
+                        token: data.token,
                     })
                 )
-                setIsError(false)
+                setIsErrorState(false)
                 navigate('/home')
+
             } catch (error: any) {
                 console.log(error)
             }
         }
     }
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUsername(e.target.value)
+        setUsernameState(e.target.value)
     }
     const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPassword(e.target.value)
+        setPasswordState(e.target.value)
     }
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value)
+        setEmailState(e.target.value)
     }
+
+
     return (
         <div>
             <CssBaseline />
@@ -103,57 +121,49 @@ const LoginScreen = () => {
                     alignItems: 'center',
                     justifyContent: "center",
                     backgroundColor: '#fcfcff',
-                    padding : '2rem',
+                    padding: '2rem',
                 }}>
-                    {/* <Container sx={{
-                        height: "20%",
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: "center",
-                    }}> */}
-                        <Typography variant='h5' color='#1a1c1e' sx={{ fontWeight: "bolder", marginBottom: "4rem" }}>Get started with Channeli</Typography>
-                        <TextField
-                            margin='dense'
-                            id='username'
-                            label='Username...'
-                            value={username}
-                            fullWidth
-                            variant='outlined'
-                            onChange={handleUsernameChange}
-                        />
-                        <TextField
-                            margin='dense'
-                            id='email'
-                            label='Email...'
-                            value={email}
-                            fullWidth
-                            variant='outlined'
-                            onChange={handleEmailChange}
-                        />
-                        <TextField
-                            margin='dense'
-                            id='password'
-                            label='Password...'
-                            value={password}
-                            fullWidth
-                            type='password'
-                            variant='outlined'
-                            onChange={handlePasswordChange}
-                        />
-                        <StyledButton
-                            // component={Link} to='/home' variant='contained'
-                            sx={{
-                                marginTop : '1rem',
-                                marginBottom : '1rem',
-                            }}
-                            variant='contained' onClick={handleLogin}
-                        >Login here</StyledButton>
-                        <Button component={Link} to='/register' variant='outlined' sx={{
-                            backgroundColor : '#ffffff',
-                            color : '#006492',
-                        }}>New? Register here</Button>
-                        <Typography color='#ba1a1a' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
-                    {/* </Container> */}
+                    <Typography variant='h5' color='#1a1c1e' sx={{ fontWeight: "bolder", marginBottom: "4rem" }}>Get started with Channeli</Typography>
+                    <TextField
+                        margin='dense'
+                        id='username'
+                        label='Username...'
+                        value={usernameState}
+                        fullWidth
+                        variant='outlined'
+                        onChange={handleUsernameChange}
+                    />
+                    <TextField
+                        margin='dense'
+                        id='email'
+                        label='Email...'
+                        value={emailState}
+                        fullWidth
+                        variant='outlined'
+                        onChange={handleEmailChange}
+                    />
+                    <TextField
+                        margin='dense'
+                        id='password'
+                        label='Password...'
+                        value={passwordState}
+                        fullWidth
+                        type='password'
+                        variant='outlined'
+                        onChange={handlePasswordChange}
+                    />
+                    <StyledButton
+                        sx={{
+                            marginTop: '1rem',
+                            marginBottom: '1rem',
+                        }}
+                        variant='contained' onClick={handleLogin}
+                    >Login here</StyledButton>
+                    <Button component={Link} to='/register' variant='outlined' sx={{
+                        backgroundColor: '#ffffff',
+                        color: '#006492',
+                    }}>New? Register here</Button>
+                    <Typography color='#ba1a1a' display={isErrorState ? 'block' : 'none'}>{errorMessageState}</Typography>
                 </Grid>
             </Grid>
         </div>

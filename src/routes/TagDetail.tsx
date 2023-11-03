@@ -1,33 +1,60 @@
-import React, { useState } from 'react';
+//React router imports
 import { useParams, Link } from 'react-router-dom';
+
+//RTK Query imports
 import { useGetTagQuery, useEditTagMutation, useDeleteTagMutation } from '../features/api/apiSlice';
-import { Card, CardContent, CardActions, Typography, Grid, Button, List, ListItemText, ListItem } from '@mui/material';
-import { StyledButton } from '../components';
-import { CreateTagDialog, DeleteTagDialog } from '../components';
-import { slugify } from '../utils/slugify';
-import { Tag } from '../interfaces';
+
+//Redux imports
 import { useSelector } from 'react-redux';
 
+//MUI imports
+import { Card, CardContent, CardActions, Typography, Button, List, ListItemText, ListItem } from '@mui/material';
+
+//Component imports
+import { CreateTagDialog, DeleteTagDialog } from '../components';
+
+interface OwnerTypographyProps {
+    username: string,
+}
+
+const OwnerTypography = ({ username }: OwnerTypographyProps) => {
+    return (
+        <Typography color='#201634' sx={{ fontWeight: '500' }}>
+        {`${username} : owner`}
+        </Typography>
+    )
+}
 const TagDetail = () => {
-    const currentUser = useSelector((state: any) => state.user)
+
+    //misc hooks
     const params = useParams()
-    const [name, setName] = useState<string>('');
-    const [members, setMembers] = useState<Array<string>>([]);
     const tagId: string | undefined = params.tagId
+
+    //fetches user state and token
+    const currentUser = useSelector((state: any) => state.user)
+
+    //RTK Query hooks
     const { data: tag, isFetching, isSuccess } = useGetTagQuery({ tagId: tagId as string, token: currentUser.token })
+    const [updateTag, { isLoading: tagUpdateLoading, isError: tagUpdateErrored }] = useEditTagMutation()
+    const [deleteTag, { isError: tagDeleteErrored }] = useDeleteTagMutation()
+
+
+    //list component
     const memberList = isSuccess && tag.users.map((username: string) => {
-        let nameText = username === tag.creator ? <Typography color='#201634' sx={{fontWeight : '500'}}>{`${username} : owner`}</Typography>
-            : <Typography color="#201634">{`${username}`}</Typography>
+        let nameText = username === tag.creator ? <OwnerTypography username={username} /> : <Typography color="#201634">{`${username}`}</Typography>
+
         return (
+
             <ListItem>
                 <ListItemText sx={{ fontWeight: '100', color: 'white' }}>
                     {nameText}
                 </ListItemText>
             </ListItem>
+            
         )
     })
-    const [updateTag, { isLoading: tagUpdateLoading, isError: tagUpdateErrored, error: tagUpdateError }] = useEditTagMutation()
-    const [deleteTag, { isLoading: tagDeleteLoading, isError: tagDeleteErrored, error: tagDeleteError }] = useDeleteTagMutation()
+
+    //content definition to handle loading
     let content
     if (isFetching) {
         content = "Loading"
@@ -90,7 +117,7 @@ const TagDetail = () => {
         )
     }
     return (
-        <div style={{ height: '100%', width: '100%', backgroundColor : "#fcfcff" }}>
+        <div style={{ height: '100%', width: '100%', backgroundColor: "#fcfcff" }}>
             {content}
         </div>
     )

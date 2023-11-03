@@ -1,23 +1,31 @@
-import React from 'react'
-import { useState } from 'react';
-import { useAddNewTagMutation, useGetUsersQuery } from '../features/api/apiSlice';
-import { Button, Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent, Typography, Snackbar, Alert } from '@mui/material';
-import { StyledButton } from '.';
-import { slugify } from '../utils/slugify';
-import { Tag } from '../interfaces';
+//React imports
+import React, {useState} from 'react'
+
+//RTK query imports
+import { useGetUsersQuery } from '../features/api/apiSlice';
+
+//Redux imports
 import { useSelector } from 'react-redux';
-import ErrorAlert from './ErrorAlert';
-//need to refactor these props but its a pain in the ass. bunch of undefined property reads will happen and need to be properly handled.
-interface CreateTagProps {
-    hook: any,
-    isLoading: any,
-    message: string,
-    mutateErrored: boolean,
-    canMutate: boolean,
-    tag : Tag | undefined,
-}
+
+//MUI imports
+import { Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent, Typography, Snackbar } from '@mui/material';
+
+//Components imports
+import { StyledButton, ErrorAlert } from '.';
+
+//utils imports
+import { slugify } from '../utils';
+
+//interface imports
+import { CreateTagProps } from '../interfaces'
+
+
 const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, tag }: CreateTagProps) => {
+
+    //fetches token state
     const currentUser = useSelector((state: any) => state.user)
+
+    //silly top level logic
     let createMode: boolean = false
     if (tag === undefined) {
         createMode = true;
@@ -25,92 +33,91 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
     if (createMode) {
         canMutate = true
     }
-    let oldSlug : any
-    if(!tag) {
+    let oldSlug: string | undefined
+    if (!tag) {
         oldSlug = undefined
     }
     else {
         oldSlug = slugify(tag.name)
     }
-    // const oldSlug = tagName != '' ? slugify(tagName) : undefined;
-    const [open, setOpen] = useState<boolean>(false)
-    const [name, setName] = useState<string>()
-    const [members, setMembers] = useState<string[]>()
-    const [mutationErroredState, setMutationErroredState] = useState<boolean>(mutateErrored)
-    // const [addNewTag, { isLoading }] = useAddNewTagMutation()
+
+    //RTK Query hooks
     const {
         data: users = [],
         isSuccess: UserSuccess,
         isError: userFetchErrored,
-        error: userFetchError,
     } = useGetUsersQuery(currentUser.token)
 
-    const userList = UserSuccess && users.map((user: any) => {
-        return (
-            <MenuItem key={user.user.username} value={user.user.username}>
-                {user.user.username}
-            </MenuItem>
-        )
-    })
-    const nameEmpty = [name].every(Boolean)
+    //state
+    const [openState, setOpenState] = useState<boolean>(false)
+    const [nameState, setNameState] = useState<string>()
+    const [membersState, setMembersState] = useState<string[]>()
+    const [mutationErroredState, setMutationErroredState] = useState<boolean>(mutateErrored)
+
+    //submission check
+    const nameEmpty = [nameState].every(Boolean)
     const canSave = nameEmpty && !isLoading
+
+    //Handlers
     const handleOpen = () => {
-        if(!tag){
-            setName('')
-            setMembers([currentUser.username])
-            setOpen(true)
+        if (!tag) {
+            setNameState('')
+            setMembersState([currentUser.username])
+            setOpenState(true)
         }
-        else
-        {
-            setName(tag.name)
-            setMembers(tag.users)
-            setOpen(true)
+        else {
+            setNameState(tag.name)
+            setMembersState(tag.users)
+            setOpenState(true)
         }
     }
     const handleCloseCancel = () => {
-        setOpen(false);
+        setOpenState(false);
     }
     const handleMemberChange = (e: SelectChangeEvent<string[]>) => {
         const { target: { value } } = e;
-        setMembers(typeof value === "string" ? value.split(',') : value);
-        console.log(members)
+        setMembersState(typeof value === "string" ? value.split(',') : value);
+        console.log(membersState)
     }
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setName(e.target.value);
+        setNameState(e.target.value);
     }
     const handleCloseSubmit = async () => {
-        if (canSave) {
+        if(canSave) {
             try {
                 let slug
+
                 if (createMode) {
-                    slug = slugify(name)
-                    await hook({ tag: { name: name, users: members, slug: slug, creator: currentUser.username }, token: currentUser.token }).unwrap().then(
+
+                    slug = slugify(nameState)
+                    await hook({ tag: { name: nameState, users: membersState, slug: slug, creator: currentUser.username }, token: currentUser.token }).unwrap().then(
                         (response: any) => {
-                            console.log(response)
                         }
                     ).catch((error: any) => {
                         setMutationErroredState(true)
                     })
+
                 } else {
+
                     slug = oldSlug
                     //can do tag? because this can only run if tag already exists.
-                    await hook({ tag: { name: name, users: members, slug: slug, id: tag?.id, creator: tag?.creator }, token: currentUser.token }).unwrap().then(
+                    await hook({ tag: { name: nameState, users: membersState, slug: slug, id: tag?.id, creator: tag?.creator }, token: currentUser.token }).unwrap().then(
                         (response: any) => {
-                            console.log(response)
                         }
                     ).catch((error: any) => {
                         setMutationErroredState(true)
                     })
+
                 }
             } catch (err) {
                 console.error(err)
             }
-            setOpen(false)
+            setOpenState(false)
         }
 
     }
 
-    let buttonDisplay = canMutate ? {display : 'block'} : {display : 'none'}
+    let buttonDisplay = canMutate ? { display: 'block' } : { display: 'none' }
     return (
         <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
             <StyledButton variant='contained' onClick={handleOpen} sx={{
@@ -118,12 +125,12 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
                 marginLeft: "3rem",
                 width: "40%",
             }} >{message}</StyledButton>
-            <Dialog open={open} onClose={handleCloseCancel} fullWidth PaperProps={{
+            <Dialog open={openState} onClose={handleCloseCancel} fullWidth PaperProps={{
                 sx: {
                     height: '70%',
                     borderRadius: '1rem',
                     backgroundColor: '#dde3ea',
-                    padding : '1rem',
+                    padding: '1rem',
                 }
             }}>
                 <DialogTitle color='#41474d' textAlign='center'>Create a new tag</DialogTitle>
@@ -137,14 +144,14 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
                         label='Name...'
                         fullWidth
                         variant='outlined'
-                        value={name}
+                        value={nameState}
                         onChange={handleNameChange}
                         sx={{ backgroundColor: 'white', borderRadius: '1rem' }}
                     />
                     <DialogContentText color='#41474d'>
                         Add some members to your tag
                     </DialogContentText>
-                    <Select multiple value={members} onChange={handleMemberChange} sx={{ backgroundColor: 'white' }}>
+                    <Select multiple value={membersState} onChange={handleMemberChange} sx={{ backgroundColor: 'white' }}>
                         {UserSuccess && users.map((user: any) => {
                             return (
                                 <MenuItem key={user.user.username} value={user.user.username}>

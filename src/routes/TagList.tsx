@@ -1,35 +1,54 @@
-import React, { useEffect } from 'react';
-import { useState } from 'react';
+//Core react imports
+import React, { useEffect, useState } from 'react';
+
+//RTK Query imports
 import { useGetTagsQuery, useAddNewTagMutation } from '../features/api/apiSlice';
-import { List, ListItem, ListItemText, Grid, Typography, ListItemButton, Button, Container, CircularProgress, TextField, CssBaseline, Snackbar, Alert } from '@mui/material';
-import { StyledButton } from '../components/';
-import { Link } from 'react-router-dom';
-import { CreateTagDialog } from '../components/';
-import { Tag } from '../interfaces';
-import { containsText } from '../utils/contains';
-import { Zoom } from 'react-awesome-reveal'
+
+//Redux imports
 import { useSelector } from 'react-redux';
-import ErrorAlert from '../components/ErrorAlert';
+//MUI imports
+import { List, Typography, Container, CircularProgress, TextField, CssBaseline, Snackbar } from '@mui/material';
+
+//component imports
+import { StyledButton, ErrorAlert } from '../components/';
+import { CreateTagDialog, TagCard } from '../components/';
+
+//interface imports
+import { Tag } from '../interfaces';
+
+//utils imports
+import { containsText } from '../utils/';
+
 
 const TagList = () => {
+
+    //fetches user state and token
     const currentUser = useSelector((state: any) => state.user)
+
+    //RTK Query hooks
     const {
         data: tags = [],
         isFetching,
         isSuccess: TagSuccess,
         isError: fetchTagsErrored,
     } = useGetTagsQuery(currentUser.token)
-    const [addNewTag, { isLoading: MutateLoading, isError: tagCreateErrored, error: tagCreateError }] = useAddNewTagMutation()
+    const [addNewTag, { isLoading: MutateLoading, isError: tagCreateErrored }] = useAddNewTagMutation()
+
+    //state (defined below queries as query info is used in state)
     const [search, setSearch] = useState<string>('')
     const [fetchTagsErroredState, setFetchTagsErroredState] = useState<boolean>(fetchTagsErrored)
     const [tagState, setTagState] = useState<Array<Tag>>([])
 
+
+    //side effects
     useEffect(() => {
         TagSuccess && setTagState(tags)
     }, [tags, TagSuccess])
     useEffect(() => {
         setFetchTagsErroredState(fetchTagsErrored)
     }, [fetchTagsErrored])
+
+    //Handlers
     const handleSearchBarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearch(e.target.value)
         if (e.target.value === '') {
@@ -42,26 +61,17 @@ const TagList = () => {
         setTagState(() => newTags)
     }
 
+
+    //List component
     const tagList = TagSuccess && tagState.map((tag: Tag) => {
+
         if (tag.users.indexOf(currentUser.username) !== -1) {
-            return (
-                <ListItem key={tag.id} sx={{
-                    backgroundColor : '#eaddff',
-                    borderRadius : '0.5rem',
-                }}>
-                    <ListItemButton component={Link} to={tag.id}>
-                        <CssBaseline />
-                        <Zoom>
-                            <ListItemText sx={{ fontWeight: '100', color: '#201634' }} primary={tag.name} />
-                        </Zoom>
-                    </ListItemButton>
-                </ListItem>
-            )
+            return <TagCard tag={tag} />
         }
     })
 
+    //content definition to handle loading
     let content
-
     if (isFetching) {
         content = (
             <Container>
@@ -83,7 +93,7 @@ const TagList = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-around',
-                        paddingBottom : '1rem',
+                        paddingBottom: '1rem',
                     }}>
                         <TextField
                             margin='dense'
@@ -102,15 +112,15 @@ const TagList = () => {
                     <Container sx={{
                         display: 'flex',
                         flexDirection: 'column',
-                        backgroundColor : '#d3e5f5',
-                        padding : '1rem',
-                        borderRadius : '1rem',
+                        backgroundColor: '#d3e5f5',
+                        padding: '1rem',
+                        borderRadius: '1rem',
                     }}>
                         <Typography variant="h4" textAlign="center" color="white" sx={{
                             marginLeft: "2rem",
                             fontWeight: "300",
                             marginBottom: "2rem",
-                            color : "#0c1d29",
+                            color: "#0c1d29",
                         }}>Your tags</Typography>
                         <List sx={{
                             maxHeight: '60vh',

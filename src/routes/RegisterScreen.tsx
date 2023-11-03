@@ -1,37 +1,50 @@
-import { Box, TextField, Container, Grid, Button, Typography, CssBaseline } from '@mui/material'
-import React, { useState } from 'react'
+//MUI imports
+import { TextField, Container, Grid, Typography, CssBaseline } from '@mui/material'
+
+//React core imports
+import { useState } from 'react'
+
+//RTK Query imports
 import { useAddNewUserMutation } from '../features/api/apiSlice';
+
+//Components imports
 import { StyledButton } from '../components';
+
+//React router imports
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { userAdded } from '../features/user/userSlice'
+
 const RegisterScreen = () => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [rePassword, setRePassword] = useState('');
-    const [errorMessage, setErrorMessage] = useState<string>('')
-    const [isError, setIsError] = useState<boolean>(false)
+
+    //misc hooks
     const navigate = useNavigate();
+
+    //state
+    const [usernameState, setUsernameState] = useState<string>('');
+    const [emailState, setEmailState] = useState<string>('');
+    const [passwordState, setPasswordState] = useState<string>('');
+    const [rePasswordState, setRePasswordState] = useState<string>('');
+    const [errorMessageState, setErrorMessageState] = useState<string>('')
+    const [isErrorState, setIsErrorState] = useState<boolean>(false)
+
+    //RTK Query hooks
     const [addNewUser, { isLoading }] = useAddNewUserMutation()
-    const dispatch = useDispatch()
-    const canSave = [username, password, email].every(Boolean) && !isLoading
+
+    const canSave = [usernameState, passwordState, emailState].every(Boolean) && !isLoading
+
+    //Handlers
     const handleRegister = async () => {
         //handle logic for posting user data to server.
-        if (password === rePassword && canSave) {
+        if (passwordState === rePasswordState && canSave) {
             try {
-                // const dummyResponse = await fetch('http://127.0.0.1:8000/api/auth/register')
-                await addNewUser({ username: username, password: password, email: email }).unwrap().then(
+                await addNewUser({ username: usernameState, password: passwordState, email: emailState }).unwrap().then(
                     (response : any) => {
-                        console.log(response)
-                        setIsError(false)
+                        setIsErrorState(false)
                         navigate('/')
                     }
                 ).catch((error : any) => {
-                    console.log(error)
-                    console.log("error is being printed.")
-                    setErrorMessage(error.data.error)
-                    setIsError(true)
+                    console.log(error.data.error)
+                    setErrorMessageState(error.data.error)
+                    setIsErrorState(true)
                     return;
                 })
 
@@ -41,6 +54,8 @@ const RegisterScreen = () => {
             }
         }
     }
+
+
     return (
         <>
             <CssBaseline />
@@ -66,42 +81,42 @@ const RegisterScreen = () => {
                             margin='dense'
                             id='username'
                             label='Enter your username'
-                            value={username}
+                            value={usernameState}
                             fullWidth
                             variant='outlined'
-                            onChange={(e) => setUsername(e.target.value)}
+                            onChange={(e) => setUsernameState(e.target.value)}
                         />
                         <TextField
                             margin='dense'
                             id='email'
                             label='Enter your Email'
-                            value={email}
+                            value={emailState}
                             fullWidth
                             variant='outlined'
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setEmailState(e.target.value)}
                         />
                         <TextField
                             margin='dense'
                             id='password'
                             label='Enter your password'
-                            value={password}
+                            value={passwordState}
                             type='password'
                             fullWidth
                             variant='outlined'
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => setPasswordState(e.target.value)}
                         />
                         <TextField
                             margin='dense'
                             id='password'
                             label='Enter your password'
-                            value={rePassword}
+                            value={rePasswordState}
                             type='password'
                             fullWidth
                             variant='outlined'
-                            onChange={(e) => setRePassword(e.target.value)}
+                            onChange={(e) => setRePasswordState(e.target.value)}
                         />
                         <StyledButton variant='contained' onClick={handleRegister}>Register</StyledButton>
-                        <Typography color='#ba1a1a' display={isError ? 'block' : 'none'}>{errorMessage}</Typography>
+                        <Typography color='#ba1a1a' display={isErrorState ? 'block' : 'none'}>{errorMessageState}</Typography>
                     </Container>
                 </Grid>
             </Grid>

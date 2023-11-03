@@ -1,15 +1,32 @@
-import React from 'react'
-import { Divider, CssBaseline, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Avatar, Grid, Button, Container } from '@mui/material';
-import { StyledButton } from '../components';
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+//core react import
+import { useState } from 'react'
+
+//MUI imports
+import { Divider, CssBaseline, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Avatar, Grid, Container, Snackbar } from '@mui/material';
 import ArticleIcon from '@mui/icons-material/Article';
 import LabelIcon from '@mui/icons-material/Label';
+
+//Redux imports
 import { useSelector } from 'react-redux';
-import { Slide } from 'react-awesome-reveal';
+
+//React router imports
+import { Outlet, Link, useNavigate } from 'react-router-dom';
+
+//Component imports
+import { StyledButton, ErrorAlert } from '../components';
+
 
 const HomeScreen = () => {
-    const navigate = useNavigate()
+    //selector hook (holds token needed for API requests)
     const currentUser = useSelector((state: any) => state.user)
+
+    //misc hook
+    const navigate = useNavigate()
+
+    //state
+    const [logoutErroredState, setLogoutErroredState] = useState<boolean>(false)
+
+    //Handlers
     const handleLogout = async () => {
         const response = await fetch('http://localhost:8000/api/logout/', {
             headers: {
@@ -18,13 +35,19 @@ const HomeScreen = () => {
             method: "POST"
         })
         const data = await response.json()
+
         //weird paradigm, error is not being thrown to catch block? having to handle manually.
         if (data.error) {
             console.log(data.error)
+            setLogoutErroredState(true)
             return;
         }
+
+        setLogoutErroredState(false)
         navigate('/')
     }
+
+
     return (
         <div style={{ height: '100%', display: 'flex', alignItems: 'center' }}>
             <div style={{
@@ -35,17 +58,17 @@ const HomeScreen = () => {
                 alignItems: "center",
                 justifyContent: 'space-between',
                 width: '25%',
-                paddingBottom : '1rem',
+                paddingBottom: '1rem',
             }}>
                 <CssBaseline />
                 <Container>
                     <Grid container>
                         <Grid item md={4} sx={{ padding: "1rem" }}>
-                            <Avatar sx={{ bgcolor: "#65597b", color : '#ffffff' }}>AA</Avatar>
+                            <Avatar sx={{ bgcolor: "#65597b", color: '#ffffff' }}>AA</Avatar>
                         </Grid>
-                        <Grid item md={8} sx={{ 
-                            padding: "1rem" ,
-                            }}>
+                        <Grid item md={8} sx={{
+                            padding: "1rem",
+                        }}>
                             <Typography noWrap={true} variant="h6" sx={{ fontWeight: "bolder", color: "white" }}>{currentUser.username}</Typography>
                             <Typography noWrap={true} component="p" sx={{ fontWeight: "light", color: "white" }}>{currentUser.email}</Typography>
                         </Grid>
@@ -55,7 +78,7 @@ const HomeScreen = () => {
                         <ListItem>
                             <ListItemButton component={Link} to="docs/">
                                 <ListItemIcon>
-                                    <ArticleIcon style={{color : '#ffffff'}}/>
+                                    <ArticleIcon style={{ color: '#ffffff' }} />
                                 </ListItemIcon>
                                 <ListItemText primary="Docs" sx={{ color: 'white' }} />
                             </ListItemButton>
@@ -64,7 +87,7 @@ const HomeScreen = () => {
                         <ListItem>
                             <ListItemButton component={Link} to="tags/">
                                 <ListItemIcon>
-                                    <LabelIcon style={{color : '#ffffff'}} />
+                                    <LabelIcon style={{ color: '#ffffff' }} />
                                 </ListItemIcon>
                                 <ListItemText primary="Tags" sx={{ color: 'white' }} />
                             </ListItemButton>
@@ -73,9 +96,14 @@ const HomeScreen = () => {
                     </List>
                 </Container>
                 <StyledButton sx={{
-                    backgroundColor : '#d3e5f5',
-                    color : "#0c1d29",
+                    backgroundColor: '#d3e5f5',
+                    color: "#0c1d29",
                 }} variant='contained' onClick={handleLogout}>Logout</StyledButton>
+                <Snackbar open={logoutErroredState} onClose={() => setLogoutErroredState(false)}>
+                    <ErrorAlert severity="error">
+                        There was an error logging out. Please try again.
+                    </ErrorAlert>
+                </Snackbar>
             </div>
             <Outlet />
         </div>

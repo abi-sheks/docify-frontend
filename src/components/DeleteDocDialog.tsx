@@ -1,30 +1,38 @@
-import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button, Typography, Tooltip, Alert, Snackbar } from '@mui/material';
-import { Doc } from '../interfaces';
-import React, { useState } from 'react'
-import { useSelector } from "react-redux";
-import { StyledButton } from ".";
-import ErrorAlert from "./ErrorAlert";
+//React core imports
+import { useState } from 'react'
 
-interface DeleteDocProps {
-    doc: Doc,
-    deletionHook: any,
-    deletionErrored: boolean
-}
+//MUI imports
+import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Tooltip, Snackbar } from '@mui/material';
+import DeleteIcon from "@mui/icons-material/Delete";
+
+//Redux imports
+import { useSelector } from "react-redux";
+
+//Components imports
+import { StyledButton, ErrorAlert } from ".";
+
+//interfaces imports
+import { DeleteDocProps } from '../interfaces'
+
 const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps) => {
+
+    //fetches user token
     const currentUser = useSelector((state: any) => state.user)
-    const [open, setOpen] = useState(false)
+
+    //state
+    const [openState, setOpenState] = useState<boolean>(false)
     const [deletionErroredState, setDeletionErroredState] = useState<boolean>(deletionErrored)
+
+    //Handlers
     const handleOpen = () => {
-        setOpen(true)
+        setOpenState(true)
     }
     const handleCloseCancel = () => {
-        setOpen(false)
+        setOpenState(false)
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook({ docId: doc.id, token: currentUser.token }).unwrap().then((response: any) =>
-                console.log(response)
+            await deletionHook({ docId: doc.id, token: currentUser.token }).unwrap().then((response: any) => {}
             ).catch((error: any) => {
                 console.log(error)
                 setDeletionErroredState(true)
@@ -32,10 +40,13 @@ const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps)
         } catch (err) {
             console.error(err)
         }
-        setOpen(false)
+        setOpenState(false)
     }
 
+    //render condition
     let iconDisplay = (doc.creator === currentUser.username) ? { display: 'block' } : { display: 'none' }
+
+    
     return (
         <div>
             <Tooltip title="Delete">
@@ -46,7 +57,7 @@ const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps)
                     <DeleteIcon />
                 </IconButton>
             </Tooltip>
-            <Dialog open={open} onClose={handleCloseCancel} PaperProps={{
+            <Dialog open={openState} onClose={handleCloseCancel} PaperProps={{
                 sx: {
                     borderRadius: '1rem',
                     backgroundColor: '#dde3ea'
