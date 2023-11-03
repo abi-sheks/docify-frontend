@@ -1,5 +1,5 @@
 //React imports
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 
 //RTK query imports
 import { useGetUsersQuery } from '../features/api/apiSlice';
@@ -51,7 +51,8 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
     //state
     const [openState, setOpenState] = useState<boolean>(false)
     const [nameState, setNameState] = useState<string>()
-    const [membersState, setMembersState] = useState<string[]>()
+    const [membersState, setMembersState] = useState<string[]>([currentUser.username])
+    const [adminsState, setAdminsState] = useState<string[]>([currentUser.username])
     const [mutationErroredState, setMutationErroredState] = useState<boolean>(mutateErrored)
 
     //submission check
@@ -63,6 +64,7 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
         if (!tag) {
             setNameState('')
             setMembersState([currentUser.username])
+            setAdminsState([currentUser.username])
             setOpenState(true)
         }
         else {
@@ -79,18 +81,32 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
         setMembersState(typeof value === "string" ? value.split(',') : value);
         console.log(membersState)
     }
+    const handleAdminChange = (e: SelectChangeEvent<string[]>) => {
+        const { target: { value } } = e;
+        const currAdmins: Array<string> = typeof value === "string" ? value.split(',') : value
+        let membersJustAdded: Array<string> = []
+        currAdmins.forEach((admin: string) => {
+            if (membersState.indexOf(admin) === -1) {
+                membersJustAdded.push(admin)
+            }
+        })
+        let newMembers = [...membersState, ...membersJustAdded]
+        setMembersState(newMembers)
+        setAdminsState(currAdmins)
+        console.log(membersState)
+    }
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNameState(e.target.value);
     }
     const handleCloseSubmit = async () => {
-        if(canSave) {
+        if (canSave) {
             try {
                 let slug
 
                 if (createMode) {
 
                     slug = slugify(nameState)
-                    await hook({ tag: { name: nameState, users: membersState, slug: slug, creator: currentUser.username }, token: currentUser.token }).unwrap().then(
+                    await hook({ tag: { name: nameState, users: membersState, slug: slug, creator: currentUser.username, admins: adminsState }, token: currentUser.token }).unwrap().then(
                         (response: any) => {
                         }
                     ).catch((error: any) => {
@@ -101,7 +117,7 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
 
                     slug = oldSlug
                     //can do tag? because this can only run if tag already exists.
-                    await hook({ tag: { name: nameState, users: membersState, slug: slug, id: tag?.id, creator: tag?.creator }, token: currentUser.token }).unwrap().then(
+                    await hook({ tag: { name: nameState, users: membersState, slug: slug, id: tag?.id, creator: tag?.creator, admins : adminsState }, token: currentUser.token }).unwrap().then(
                         (response: any) => {
                         }
                     ).catch((error: any) => {
@@ -152,6 +168,18 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
                         Add some members to your tag
                     </DialogContentText>
                     <Select multiple value={membersState} onChange={handleMemberChange} sx={{ backgroundColor: 'white' }}>
+                        {UserSuccess && users.map((user: any) => {
+                            return (
+                                <MenuItem key={user.user.username} value={user.user.username}>
+                                    {user.user.username}
+                                </MenuItem>
+                            )
+                        })}
+                    </Select>
+                    <DialogContentText color='#41474d'>
+                        Make some admins for your tag. They have the privileges to alter all the fields of your tag, including remove you.
+                    </DialogContentText>
+                    <Select multiple value={adminsState} onChange={handleAdminChange} sx={{ backgroundColor: 'white' }}>
                         {UserSuccess && users.map((user: any) => {
                             return (
                                 <MenuItem key={user.user.username} value={user.user.username}>

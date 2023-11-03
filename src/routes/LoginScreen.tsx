@@ -38,41 +38,38 @@ const LoginScreen = () => {
     const handleLogin = async () => {
 
         if (canSave) {
-            try {
-                const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-type': 'application/json',
-                        'mode': 'no-cors',
-                    },
-                    body: JSON.stringify({ username: usernameState, email: emailState, password: passwordState })
-                })
-                const data = await response.json()
-
-                //weird paradigm, error is not being thrown to catch block? having to handle manually.
-                if (data.error) {
-                    console.log(data.error)
+            fetch('http://127.0.0.1:8000/api/auth/login/', {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                    'mode': 'no-cors',
+                },
+                body: JSON.stringify({ username: usernameState, email: emailState, password: passwordState })
+            }).then((response: any) => {
+                response.json().then((data: any) => {
+                    setUsernameState('')
+                    setPasswordState('')
+                    setEmailState('')
+                    dispatch(
+                        userAdded({
+                            username: data.username,
+                            email: data.email,
+                            token: data.token,
+                        })
+                    )
+                    setIsErrorState(false)
+                    navigate('/home')
+                }).catch((error: any) => {
+                    console.log(error)
                     setIsErrorState(true)
-                    setErrorMessageState(data.error)
-                    return;
-                }
+                    setErrorMessageState("Error in fetching!")
+                })
 
-                setUsernameState('')
-                setPasswordState('')
-                setEmailState('')
-                dispatch(
-                    userAdded({
-                        username: data.username,
-                        email: data.email,
-                        token: data.token,
-                    })
-                )
-                setIsErrorState(false)
-                navigate('/home')
-
-            } catch (error: any) {
+            }).catch((error: any) => {
                 console.log(error)
-            }
+                setIsErrorState(true)
+                setErrorMessageState("Error in fetching")
+            })
         }
     }
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {

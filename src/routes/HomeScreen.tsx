@@ -2,7 +2,7 @@
 import { useState } from 'react'
 
 //MUI imports
-import { Divider, CssBaseline, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Avatar, Grid, Container, Snackbar } from '@mui/material';
+import { Divider, CssBaseline, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Grid, Container, Snackbar } from '@mui/material';
 import ArticleIcon from '@mui/icons-material/Article';
 import LabelIcon from '@mui/icons-material/Label';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -29,23 +29,26 @@ const HomeScreen = () => {
 
     //Handlers
     const handleLogout = async () => {
-        const response = await fetch('http://localhost:8000/api/logout/', {
+        //weird paradigm, error is not being thrown to catch block? so have to chain fetches.
+        fetch('http://localhost:8000/api/logout/', {
             headers: {
                 Authorization: `Token ${currentUser.token}`
             },
             method: "POST"
-        })
-        const data = await response.json()
+        }).then((response: any) => {
+            response.json().then((data: any) => {
+                setLogoutErroredState(false)
+                navigate('/')
+            }).catch((error: any) => {
+                console.log(error)
+                setLogoutErroredState(true)
+            })
 
-        //weird paradigm, error is not being thrown to catch block? having to handle manually.
-        if (data.error) {
-            console.log(data.error)
+        }).catch((error: any) => {
+            console.log("Error!")
             setLogoutErroredState(true)
-            return;
-        }
+        })
 
-        setLogoutErroredState(false)
-        navigate('/')
     }
 
 

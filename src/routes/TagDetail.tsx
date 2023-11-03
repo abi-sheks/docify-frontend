@@ -103,7 +103,7 @@ const TagDetail = () => {
                             isLoading={tagUpdateLoading}
                             message="Edit tag"
                             mutateErrored={tagUpdateErrored}
-                            canMutate={currentUser.username === tag.creator}
+                            canMutate={tag.admins.indexOf(currentUser.username) !== -1}
                             tag={tag}
                         />
                         <DeleteTagDialog

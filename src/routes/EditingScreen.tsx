@@ -1,5 +1,5 @@
 //React imports
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 
 //RTK Query imports
 import { useGetDocQuery } from '../features/api/apiSlice';
@@ -39,7 +39,7 @@ const EditingScreen = () => {
     }
 
     //RTK Query hook
-    const { data: doc, isFetching, isSuccess } = useGetDocQuery({ docId: docId as string, token: currentUser.token })
+    const { data: doc, isSuccess } = useGetDocQuery({ docId: docId as string, token: currentUser.token })
 
     //Side effects
     const quillRef: any = useRef<number>(0)
@@ -71,7 +71,7 @@ const EditingScreen = () => {
         return () => {
             provider.disconnect();
         }
-    }, [])
+    }, [docId, isReadOnly])
 
 
     return (

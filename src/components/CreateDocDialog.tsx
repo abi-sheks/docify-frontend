@@ -8,7 +8,7 @@ import { useGetTagsQuery } from '../features/api/apiSlice';
 import { useSelector } from 'react-redux';
 
 //MUI import
-import { Dialog, DialogTitle, DialogActions, TextField, Select, MenuItem, SelectChangeEvent, Snackbar, Typography } from '@mui/material';
+import { Dialog, DialogTitle, DialogActions, TextField, Select, MenuItem, SelectChangeEvent, Snackbar, Typography, FormControl, FormGroup, FormControlLabel, Switch } from '@mui/material';
 
 //components imports
 import { StyledButton, ErrorAlert } from '.';
@@ -46,6 +46,7 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
 
   //state
   const [openState, setOpenState] = useState<boolean>(false)
+  const [isRestrictedState, setIsRestrictedState] = useState<boolean>()
   const [titleState, setTitleState] = useState<string>('')
   const [readersState, setReadersState] = useState<string[]>([])
   const [writersState, setWritersState] = useState<string[]>([])
@@ -75,11 +76,13 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
       setReadersState([])
       setWritersState([])
       setTitleState('')
+      setIsRestrictedState(true)
     }
     else {
       setReadersState(doc.read_tags)
       setWritersState(doc.write_tags)
       setTitleState(doc.title)
+      setIsRestrictedState(doc.restricted)
     }
     setOpenState(true)
   }
@@ -95,7 +98,7 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
   }
   const handleWritersChange = (e: SelectChangeEvent<string[]>) => {
     const { target: { value } } = e;
-    const currWriters = typeof value === "string" ? value.split(',') : value
+    const currWriters: Array<string> = typeof value === "string" ? value.split(',') : value
     let readersJustAdded: Array<string> = []
     currWriters.forEach((writer: string) => {
       if (readersState.indexOf(writer) === -1) {
@@ -106,6 +109,9 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
     setWritersState(currWriters);
     setReadersState(newReaders)
   }
+  const handleRestrictedChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsRestrictedState(e.target.checked)
+  }
   const handleCloseSubmit = async () => {
     if (canSave) {
       try {
@@ -113,7 +119,7 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
         if (createMode) {
 
           slug = slugify(titleState)
-          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username }, token: currentUser.token }).unwrap().
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username }, token: currentUser.token, restricted: isRestrictedState }).unwrap().
             then((response: any) => {
               setReadersState([])
               setWritersState([])
@@ -124,7 +130,7 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
 
           slug = oldSlug
           //doc? works because doc must exist for this to run
-          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, id: doc?.id, creator: doc?.creator }, token: currentUser.token }).unwrap().
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, id: doc?.id, creator: doc?.creator, restricted: isRestrictedState }, token: currentUser.token }).unwrap().
             then((response: any) => {
               console.log(response)
               setReadersState([])
@@ -142,6 +148,13 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
   }
 
   //Component display check
+  let restrictionDisplay : boolean = true
+  if(!createMode) 
+  {
+    //i.e doc is not undefined
+    console.log("Hit")
+     restrictionDisplay = currentUser.username === doc?.creator 
+  }
   let readSelectDisplay = canEditReaders ? { display: 'block' } : { display: 'none' }
   let writeSelectDisplay = canEditWriters ? { display: 'block' } : { display: 'none' }
 
@@ -175,19 +188,28 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
             onChange={handleTitleChange}
             sx={{ backgroundColor: 'white' }}
           />
-          <Typography display={canEditReaders ? 'block' : 'none'} color='#41474d' sx={{ fontWeight: '100' }}>
+          <FormControl>
+            <FormGroup>
+              <FormControlLabel control={
+                <Switch disabled={!restrictionDisplay} checked={isRestrictedState} onChange={handleRestrictedChange} name='restricted' />
+              }
+                label="Restrict access to everyone but yourself"
+              />
+            </FormGroup>
+          </FormControl>
+          <Typography display={!canEditReaders || isRestrictedState ? 'none' : 'block'} color='#41474d' sx={{ fontWeight: '100' }}>
             Choose which tags have access to read the document
           </Typography>
-          <Select multiple value={readersState} onChange={handleReadersChange} sx={{
+          <Select disabled={isRestrictedState} multiple value={readersState} onChange={handleReadersChange} sx={{
             ...readSelectDisplay,
             backgroundColor: 'white'
           }}>
             {tagList}
           </Select>
-          <Typography display={canEditWriters ? 'block' : 'none'} color='#41474d' sx={{ fontWeight: '100' }}>
+          <Typography display={!canEditWriters || isRestrictedState ? 'none' : 'block'} color='#41474d' sx={{ fontWeight: '100' }}>
             Choose which tags have access to edit the document
           </Typography>
-          <Select multiple value={writersState} onChange={handleWritersChange} sx={{
+          <Select disabled={isRestrictedState} multiple value={writersState} onChange={handleWritersChange} sx={{
             ...writeSelectDisplay,
             backgroundColor: 'white'
           }}>
