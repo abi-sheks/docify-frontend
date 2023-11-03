@@ -11,19 +11,20 @@ import { Zoom } from "react-awesome-reveal"
 import { Link } from "react-router-dom"
 
 interface TagCardProps {
-    tag : Tag
+    tag: Tag
 }
-const TagCard = ({tag} : TagCardProps) => {
-    
+const TagCard = ({ tag }: TagCardProps) => {
+
     return (
         <ListItem key={tag.id} sx={{
-            backgroundColor: '#eaddff',
-            borderRadius: '0.5rem',
+            backgroundColor: '#65597b',
+            borderTop: '1px solid #ffffff',
+            borderBottom: '1px solid #ffffff'
         }}>
             <ListItemButton component={Link} to={tag.id}>
                 <CssBaseline />
                 <Zoom>
-                    <ListItemText sx={{ fontWeight: '100', color: '#201634' }} primary={tag.name} />
+                    <ListItemText sx={{ fontWeight: '100', color: '#ffffff' }} primary={tag.name} />
                 </Zoom>
             </ListItemButton>
         </ListItem>
