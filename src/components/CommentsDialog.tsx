@@ -8,10 +8,14 @@ import { useGetCommentsQuery, useAddNewCommentMutation } from '../features/api/a
 import { useSelector } from "react-redux";
 
 //MUI imports
-import { Dialog, Typography, TextField, List, ListItem, ListItemText, Snackbar, } from '@mui/material';
+import { Dialog, Typography, TextField, List, ListItem, Snackbar, } from '@mui/material';
 
 //Components imports
 import { ErrorAlert, StyledButton } from ".";
+import { Zoom } from 'react-awesome-reveal';
+
+//interface imports
+import { Comment } from '../interfaces';
 
 const CommentsDialog = ({ docID }: any) => {
     //fetches user for token
@@ -19,14 +23,13 @@ const CommentsDialog = ({ docID }: any) => {
     //state
     const [openState, setOpenState] = useState<boolean>(false)
     const [commentBarState, setCommentBarState] = useState<string>('')
-    const [commentsState, setCommentsState] = useState<Array<any>>()
+    const [commentsState, setCommentsState] = useState<Array<Comment>>()
     const [commentsFetchErroredState, setCommentsFetchErroredState] = useState<boolean>(false)
 
     //RTK hooks
     const {
         data: comments = [],
         isSuccess: commentsFetchSuccess,
-        isLoading: commentsFetchLoading,
         isError: commentsFetchErrored,
     } = useGetCommentsQuery(currentUser.token)
 
@@ -59,6 +62,7 @@ const CommentsDialog = ({ docID }: any) => {
             await addNewComment({ comment: { content: commentBarState, commenter: currentUser.username, parent_doc: docID, }, token: currentUser.token }).unwrap().then(
                 (response: any) => {
                     console.log(response)
+                    setCommentBarState('')
                 }
             ).catch((error: any) => {
                 console.log(error)
@@ -67,13 +71,20 @@ const CommentsDialog = ({ docID }: any) => {
     }
 
     //List component
-    const commentList = commentsFetchSuccess && commentsState?.map((comment: any) => {
+    const commentList = commentsFetchSuccess && commentsState?.map((comment: Comment) => {
         console.log(comment)
-        if (comment.commenter === currentUser.username) {
+        if (comment.parent_doc === docID) {
             return (
-                <ListItem key={comment.comment_id}>
-                    <ListItemText>{comment.commenter}</ListItemText>
-                    <ListItemText>{comment.content}</ListItemText>
+                <ListItem key={comment.comment_id} sx={{
+                    display : 'flex',
+                    flexDirection : 'column',
+                    alignItems : 'flex-start',
+                    width : '100%',
+                }}>
+                    <Zoom>
+                    <Typography textAlign='left' sx={{fontWeight : '500'}}>{comment.commenter}</Typography>
+                    <Typography textAlign='left' sx={{fontWeight : '300'}}>{comment.content}</Typography>
+                    </Zoom>
                 </ListItem>
             )
         }
@@ -93,17 +104,16 @@ const CommentsDialog = ({ docID }: any) => {
             }} sx={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
                 justifyContent: 'space-between',
             }}>
-                <div>
+                <div style={{height : '80%'}}>
                     <Typography color='#41474d' variant='h5' sx={{
                         fontWeight: '100'
                     }}>
                         Comments
                     </Typography>
                     <List sx={{
-                        maxHeight: '60%',
+                        maxHeight: '80%',
                         overflow: 'auto',
                     }}>
                         {commentList}

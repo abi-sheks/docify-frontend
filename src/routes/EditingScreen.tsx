@@ -74,7 +74,7 @@ const EditingScreen = () => {
         return () => {
             provider.disconnect();
         }
-    }, [docId, isReadOnly])
+    }, [])
 
 
     return (
