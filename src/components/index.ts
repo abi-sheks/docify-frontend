@@ -5,6 +5,7 @@ export { default as DeleteTagDialog } from './DeleteTagDialog';
 export { default as DocCard } from './DocCard';
 export { default as TagCard } from './TagCard';
 export { default as FilterChip } from './FilterChip';
+export { default as CommentsDialog } from './CommentsDialog';
 
 //styled component exports
 export { default as StyledButton } from './StyledButton';

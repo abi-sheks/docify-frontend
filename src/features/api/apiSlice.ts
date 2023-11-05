@@ -11,7 +11,7 @@ const authHeader = (token: string) => {
 export const apiSlice = createApi({
     reducerPath: "api",
     baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:8000/api' }),
-    tagTypes: ['Tag', 'User', 'CurrentUser', 'Doc', 'DocSearch'],
+    tagTypes: ['Tag', 'User', 'CurrentUser', 'Doc', 'DocSearch', 'Comment'],
     endpoints: (builder) => ({
         getTags: builder.query<any, any>({
             query: (token: string) => ({
@@ -138,6 +138,23 @@ export const apiSlice = createApi({
             }),
             invalidatesTags: ['User', 'Tag']
         }),
+        getComments : builder.query<any, string>({
+            query : (token : string) => 
+            ({
+                url : `/comments`,
+                headers : authHeader(token),
+            }),
+            providesTags : ['Comment']
+        }),
+        addNewComment : builder.mutation({
+            query : ({comment, token} : any) => ({
+                url : '/comments/',
+                method : 'POST',
+                body : comment,
+                headers : authHeader(token),
+            }),
+            invalidatesTags : ['Comment']
+        })
     })
 })
 
@@ -145,15 +162,21 @@ export const {
     useGetTagsQuery,
     useGetTagQuery,
     useAddNewTagMutation,
+    useEditTagMutation,
+    useDeleteTagMutation,
+
     useGetDocQuery,
     useGetDocsQuery,
     useAddNewDocMutation,
+    useEditDocMutation,
+    useDeleteDocMutation,
+
     useGetUserQuery,
     useGetUsersQuery,
     useAddNewUserMutation,
-    useEditTagMutation,
-    useEditDocMutation,
-    useDeleteDocMutation,
-    useDeleteTagMutation,
+
     useGetDocSearchesQuery,
+    
+    useGetCommentsQuery,
+    useAddNewCommentMutation,
 } = apiSlice;

@@ -13,6 +13,9 @@ import { useParams, Link } from 'react-router-dom';
 //MUI imports 
 import { Button, Typography, Container } from '@mui/material';
 
+//Component imports
+import { CommentsDialog } from '../components';
+
 //quill imports
 import Quill from 'quill';
 import QuillCursors from 'quill-cursors';
@@ -46,7 +49,7 @@ const EditingScreen = () => {
     useEffect(() => {
 
         Quill.register('modules/cursors', QuillCursors);
-        
+
         //hack to fix toolbar duplication
         const actualEditor = document.createElement('div')
         quillRef.current.append(actualEditor)
@@ -91,10 +94,13 @@ const EditingScreen = () => {
                 marginBottom: '1rem',
             }} ref={quillRef} id="editor">
             </div>
-            <Button variant='contained' component={Link} to='/home/docs' sx={{
-                backgroundColor: '#006492',
-                color: '#ffffff'
-            }}>Back</Button>
+            <div style={{display : 'flex', alignItems : 'center'}}>
+                <Button variant='contained' component={Link} to='/home/docs' sx={{
+                    backgroundColor: '#006492',
+                    color: '#ffffff'
+                }}>Back</Button>
+                <CommentsDialog docID={isSuccess && doc.id}/>
+            </div>
         </Container>
     )
 }

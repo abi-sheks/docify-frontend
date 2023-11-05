@@ -71,13 +71,13 @@ const HomeScreen = () => {
                             paddingTop: '2rem',
                             paddingLeft: '2rem',
                         }}>
-                            <AccountCircleIcon />
+                            <AccountCircleIcon style={{ color: '#ffffff' }} />
                         </Grid>
                         <Grid item md={8} sx={{
                             padding: "1rem",
                         }}>
-                            <Typography noWrap={true} variant="h6" sx={{ fontWeight: "bolder", color: "white" }}>{currentUser.username}</Typography>
-                            <Typography noWrap={true} component="p" sx={{ fontWeight: "light", color: "white" }}>{currentUser.email}</Typography>
+                            <Typography noWrap={true} variant="h6" sx={{ fontWeight: "300", color: "white" }}>{currentUser.username}</Typography>
+                            <Typography noWrap={true} component="p" sx={{ fontWeight: "500", color: "white" }}>{currentUser.email}</Typography>
                         </Grid>
                     </Grid>
                     <List>

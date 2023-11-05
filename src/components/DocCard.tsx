@@ -57,6 +57,7 @@ const DocCard = ({ doc, deletionHook, hook, isLoading, deletionErrored, mutateEr
                     alignItems: 'center',
                     backgroundColor: '#65597b',
                     borderRadius: '1rem',
+                    border : '1px solid #ffffff',
                     padding: '1rem',
                 }}>
                     <CardContent>
