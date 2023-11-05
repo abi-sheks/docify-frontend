@@ -1,3 +1,7 @@
+// @ts-nocheck
+
+// many quill modules dont have type definitions :'(
+
 //React imports
 import { useRef, useEffect } from 'react'
 
@@ -21,6 +25,11 @@ import Quill from 'quill';
 import QuillCursors from 'quill-cursors';
 import 'quill/dist/quill.bubble.css'
 import 'quill/dist/quill.snow.css'
+import ImageCompress from 'quill-image-compress'
+import BlotFormatter from 'quill-blot-formatter';
+import MagicUrl from 'quill-magic-url';
+import MarkdownShortcuts from 'quill-markdown-shortcuts';
+
 
 //yjs imports
 import * as Y from 'yjs';
@@ -49,15 +58,35 @@ const EditingScreen = () => {
     useEffect(() => {
 
         Quill.register('modules/cursors', QuillCursors);
+        Quill.register('modules/imageCompress', ImageCompress);
+        Quill.register('modules/blotFormatter', BlotFormatter);
+        Quill.register('modules/magicUrl', MagicUrl);
+        Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
+
+
 
         //hack to fix toolbar duplication
         const actualEditor = document.createElement('div')
+        actualEditor.style.maxHeight = '80%'
         quillRef.current.append(actualEditor)
 
         //instantiates quill
         const quill = new Quill(actualEditor as string | Element, {
             modules: {
                 cursors: true,
+                imageCompress: {
+                    quality: 0.7,
+                    maxWidth: 1000, 
+                    maxHeight: 1000,
+                    imageType: 'image/jpeg',
+                    debug: true,
+                    suppressErrorLogging: false,
+                    insertIntoEditor: undefined, 
+                  },
+                  blotFormatter : {
+                  },
+                  magicUrl : true,
+                  markdownShortcuts : {},
             },
             readOnly: isReadOnly,
             theme: 'snow',
@@ -86,12 +115,18 @@ const EditingScreen = () => {
             flexDirection: 'column',
             alignItems: 'center',
             padding: '2rem',
+            justifyContent : 'space-between'
         }}>
             <Typography variant='h3' color='#1a1c1e' sx={{ fontWeight: '100', marginBottom: '1rem' }}>
                 {isSuccess && doc.title}
             </Typography>
             <div style={{
-                marginBottom: '1rem',
+                    backgroundColor: '#dde3ea',
+                    border: '1px solid #41474d',
+                    color : '#1a1c1e',
+                    height : '80%',
+                    width : '100%',
+                    margin : 'auto'
             }} ref={quillRef} id="editor">
             </div>
             <div style={{display : 'flex', alignItems : 'center'}}>
@@ -100,6 +135,7 @@ const EditingScreen = () => {
                     color: '#ffffff'
                 }}>Back</Button>
                 <CommentsDialog docID={isSuccess && doc.id}/>
+
             </div>
         </Container>
     )
