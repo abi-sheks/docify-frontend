@@ -32,45 +32,57 @@ const LoginScreen = () => {
     const [errorMessageState, setErrorMessageState] = useState<string>('')
     const [isErrorState, setIsErrorState] = useState<boolean>(false)
 
-    const canSave = [usernameState, passwordState, emailState].every(Boolean)
+    const canSave = [usernameState, passwordState, emailState].every(Boolean) || true
 
     //Handlers
     const handleLogin = async () => {
+        window.location.replace("http://localhost:8000/api/auth/login/")
+        // try
+        // {
+        //     const data_resp = await fetch('http://localhost:8000/api/auth/login/')
+        //     console.log(data_resp)
+        // }
+        // catch(error)
+        // {
+        //     console.log(error)
+        // }
 
-        if (canSave) {
-            fetch('http://127.0.0.1:8000/api/auth/login/', {
-                method: 'POST',
-                headers: {
-                    'Content-type': 'application/json',
-                    'mode': 'no-cors',
-                },
-                body: JSON.stringify({ username: usernameState, email: emailState, password: passwordState })
-            }).then((response: any) => {
-                response.json().then((data: any) => {
-                    setUsernameState('')
-                    setPasswordState('')
-                    setEmailState('')
-                    dispatch(
-                        userAdded({
-                            username: data.username,
-                            email: data.email,
-                            token: data.token,
-                        })
-                    )
-                    setIsErrorState(false)
-                    navigate('/home')
-                }).catch((error: any) => {
-                    console.log(error)
-                    setIsErrorState(true)
-                    setErrorMessageState("Error in fetching!")
-                })
+        // if (canSave) {
+        //     fetch('http://127.0.0.1:8000/api/auth/login/', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-type': 'application/json',
+        //             'mode': 'no-cors',
+        //         },
+        //         body: JSON.stringify({ username: usernameState, email: emailState, password: passwordState })
+        //     }).then((response: any) => {
+        //         response.json().then((data: any) => {
+        //             console.log(data)
+        //             setUsernameState('')
+        //             setPasswordState('')
+        //             setEmailState('')
+        //             dispatch(
+        //                 userAdded({
+        //                     username: data.username,
+        //                     email: data.email,
+        //                     token: data.token,
+        //                 })
+        //             )
+        //             console.log("hit")
+        //             setIsErrorState(false)
+        //             navigate('/home')
+        //         }).catch((error: any) => {
+        //             console.log(error)
+        //             setIsErrorState(true)
+        //             setErrorMessageState("Error in fetching!")
+        //         })
 
-            }).catch((error: any) => {
-                console.log(error)
-                setIsErrorState(true)
-                setErrorMessageState("Error in fetching")
-            })
-        }
+        //     }).catch((error: any) => {
+        //         console.log(error)
+        //         setIsErrorState(true)
+        //         setErrorMessageState("Error in fetching")
+        //     })
+        // }
     }
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUsernameState(e.target.value)

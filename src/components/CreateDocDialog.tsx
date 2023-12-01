@@ -129,9 +129,8 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
       try {
         let slug
         if (createMode) {
-
           slug = slugify(titleState)
-          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username, accessors: accessorsState }, token: currentUser.token, restricted: isRestrictedState }).unwrap().
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username, accessors: accessorsState, restricted : isRestrictedState }, token: currentUser.token}).unwrap().
             then((response: any) => {
               setReadersState([])
               setWritersState([])

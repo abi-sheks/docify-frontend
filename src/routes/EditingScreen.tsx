@@ -56,12 +56,12 @@ const EditingScreen = () => {
     //Side effects
     const quillRef: any = useRef<number>(0)
     useEffect(() => {
-
         Quill.register('modules/cursors', QuillCursors);
         Quill.register('modules/imageCompress', ImageCompress);
         Quill.register('modules/blotFormatter', BlotFormatter);
         Quill.register('modules/magicUrl', MagicUrl);
         Quill.register('modules/markdownShortcuts', MarkdownShortcuts);
+
 
 
 
@@ -76,17 +76,17 @@ const EditingScreen = () => {
                 cursors: true,
                 imageCompress: {
                     quality: 0.7,
-                    maxWidth: 1000, 
+                    maxWidth: 1000,
                     maxHeight: 1000,
                     imageType: 'image/jpeg',
                     debug: true,
                     suppressErrorLogging: false,
-                    insertIntoEditor: undefined, 
-                  },
-                  blotFormatter : {
-                  },
-                  magicUrl : true,
-                  markdownShortcuts : {},
+                    insertIntoEditor: undefined,
+                },
+                blotFormatter: {
+                },
+                magicUrl: true,
+                markdownShortcuts: {},
             },
             readOnly: isReadOnly,
             theme: 'snow',
@@ -105,7 +105,6 @@ const EditingScreen = () => {
         }
     }, [])
 
-
     return (
         <Container sx={{
             height: '100%',
@@ -115,26 +114,26 @@ const EditingScreen = () => {
             flexDirection: 'column',
             alignItems: 'center',
             padding: '2rem',
-            justifyContent : 'space-between'
+            justifyContent: 'space-between'
         }}>
             <Typography variant='h3' color='#1a1c1e' sx={{ fontWeight: '100', marginBottom: '1rem' }}>
                 {isSuccess && doc.title}
             </Typography>
             <div style={{
-                    backgroundColor: '#dde3ea',
-                    border: '1px solid #41474d',
-                    color : '#1a1c1e',
-                    height : '80%',
-                    width : '100%',
-                    margin : 'auto'
+                backgroundColor: '#dde3ea',
+                border: '1px solid #41474d',
+                color: '#1a1c1e',
+                height: '80%',
+                width: '100%',
+                margin: 'auto'
             }} ref={quillRef} id="editor">
             </div>
-            <div style={{display : 'flex', alignItems : 'center'}}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
                 <Button variant='contained' component={Link} to='/home/docs' sx={{
                     backgroundColor: '#006492',
                     color: '#ffffff'
-                }}>Back</Button>
-                <CommentsDialog docID={isSuccess && doc.id}/>
+                }}>Save and Quit</Button>
+                <CommentsDialog docID={isSuccess && doc.id} />
 
             </div>
         </Container>

@@ -35,13 +35,20 @@ const DocCard = ({ doc, deletionHook, hook, isLoading, deletionErrored, mutateEr
     let canEditReaders: boolean = false
     let canEditWriters: boolean = false
     allTags.forEach((tag: Tag) => {
-        if ((doc.read_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username) !== -1) || doc.creator === currentUser.username) {
+        if ((doc.read_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username) !== -1) || doc.creator === currentUser.username || doc.accessors.indexOf(currentUser.username) !== -1) {
             canEditReaders = true
         }
-        if ((doc.write_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username) !== -1) || doc.creator === currentUser.username) {
+        if ((doc.write_tags.indexOf(tag.name) !== -1 && tag.users.indexOf(currentUser.username) !== -1) || doc.creator === currentUser.username || doc.accessors.indexOf(currentUser.username) !== -1) {
             canEditWriters = true
         }
     })
+
+    //have to check for case of no tags as well 
+    if(doc.creator === currentUser.username || doc.accessors.indexOf(currentUser.username) !== -1) {
+        canEditReaders = true;
+        canEditWriters = true;
+    }
+
     let editAccess = 'read'
     if (canEditWriters) {
         editAccess = 'write'

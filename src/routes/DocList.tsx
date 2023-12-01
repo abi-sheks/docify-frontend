@@ -19,9 +19,11 @@ import { tagInDoc } from '../utils'
 
 //interfaces imports
 import { Doc } from '../interfaces'
+import { useNavigate } from 'react-router-dom'
 
 
 const DocList = () => {
+  const navigate = useNavigate()
 
   //selector hook (holds token needed for API requests)
   const currentUser = useSelector((state: any) => state.user)
@@ -50,7 +52,7 @@ const DocList = () => {
   const {
     data: searched = [],
     isError: searchDocsErrored,
-  } = useGetDocSearchesQuery({ title__contains: searchState, token: currentUser.token })
+  } = useGetDocSearchesQuery({ contenttext__contains: searchState, token: currentUser.token })
 
   //particular state requires error from above hook to setState
   const [searchDocsErroredState, setSearchDocsErroredState] = useState<boolean>(searchDocsErrored)
@@ -180,7 +182,7 @@ const DocList = () => {
               <TextField
                 margin='dense'
                 id='search'
-                label='Search for docs by title...'
+                label='Search for docs by keyword...'
                 value={searchState}
                 fullWidth
                 variant='outlined'

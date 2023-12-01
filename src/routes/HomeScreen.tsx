@@ -1,5 +1,6 @@
+//@ts-nocheck
 //core react import
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 //MUI imports
 import { Divider, CssBaseline, Typography, List, ListItem, ListItemIcon, ListItemText, ListItemButton, Grid, Container, Snackbar } from '@mui/material';
@@ -8,13 +9,17 @@ import LabelIcon from '@mui/icons-material/Label';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 //Redux imports
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
 
 //React router imports
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 
 //Component imports
 import { StyledButton, ErrorAlert } from '../components';
+
+import { checkLogin, getCookie } from '../utils';
+import { BackendClient } from '../utils/client';
 
 
 const HomeScreen = () => {
@@ -23,6 +28,7 @@ const HomeScreen = () => {
 
     //misc hook
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     //state
     const [logoutErroredState, setLogoutErroredState] = useState<boolean>(false)
@@ -30,27 +36,30 @@ const HomeScreen = () => {
     //Handlers
     const handleLogout = async () => {
         //weird paradigm, error is not being thrown to catch block? so have to chain fetches.
-        fetch('http://localhost:8000/api/logout/', {
-            headers: {
-                Authorization: `Token ${currentUser.token}`
-            },
-            method: "POST"
-        }).then((response: any) => {
-            response.json().then((data: any) => {
-                setLogoutErroredState(false)
-                navigate('/')
-            }).catch((error: any) => {
-                console.log(error)
-                setLogoutErroredState(true)
-            })
-
-        }).catch((error: any) => {
-            console.log("Error!")
-            setLogoutErroredState(true)
+        const csrftoken = getCookie("csrftoken")
+        console.log(csrftoken)
+        BackendClient.get("logout/").then(response => {
+            console.log(response)
+            dispatch(
+                userAdded({
+                    username : "",
+                    email : ""
+                })
+            )
+            navigate('/')
+        }).catch(error => {
+            console.log(error)
         })
-
     }
+    //whoami
+    useEffect(() => {
+        (async () => {
 
+          await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
 
     return (
         <div style={{ height: '100%', display: 'flex', alignItems: 'center' }}>

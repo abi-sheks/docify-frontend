@@ -1,22 +1,33 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Tag, Doc } from '../../interfaces'
+import { getCookie } from '../../utils';
 
 
-const authHeader = (token: string) => {
-    return {
-        Authorization: `Token ${token}`
-    }
-}
+
+// const authHeader = () => {
+//     return {
+//         XCSRFTOKEN : "csrfToken",
+//     }
+// }
 
 export const apiSlice = createApi({
     reducerPath: "api",
-    baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:8000/api' }),
+    baseQuery: fetchBaseQuery({
+         baseUrl: 'http://localhost:8000/api' ,
+         credentials : "include",
+         prepareHeaders : (headers : any) => {
+            const csrfToken = getCookie("CSRF-TOKEN")
+            console.log(csrfToken)
+            headers.set('X-CSRFTOKEN', csrfToken)
+            return headers
+         },
+        }),
     tagTypes: ['Tag', 'User', 'CurrentUser', 'Doc', 'DocSearch', 'Comment'],
     endpoints: (builder) => ({
         getTags: builder.query<any, any>({
-            query: (token: string) => ({
+            query: () => ({
                 url: '/tags',
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             providesTags: (result = [], error, arg) => [
                 'Tag',
@@ -25,43 +36,43 @@ export const apiSlice = createApi({
             ]
         }),
         getTag: builder.query<any, any>({
-            query: ({ tagId, token }: any) => ({
+            query: ({ tagId  }: any) => ({
                 url: `/tags/${tagId}`,
-                headers: authHeader(token),
+                // headers: authHeader(),
             }),
             providesTags: (result, error, arg) => [{ type: 'Tag', id: arg }]
         }),
         addNewTag: builder.mutation({
-            query: ({ tag, token }: any) => ({
+            query: ({ tag}: any) => ({
                 url: '/tags/',
                 method: 'POST',
                 body: tag,
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             invalidatesTags: ['Tag'],
         }),
         editTag: builder.mutation({
-            query: ({ tag, token }: any) => ({
+            query: ({ tag }: any) => ({
                 url: `/tags/${tag.id}`,
                 method: 'PUT',
                 body: tag,
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             invalidatesTags: (result, error, arg) => [{ type: 'Tag', id: arg.id }]
         }),
         deleteTag: builder.mutation({
-            query: ({ tagId, token }: any) => ({
+            query: ({ tagId }: any) => ({
                 url: `/tags/${tagId}`,
                 method: "DELETE",
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             invalidatesTags: ['Tag', 'Doc']
         }),
         getDocs: builder.query<any, string>({
-            query: (token: string) =>
+            query: () =>
             ({
                 url: '/docs',
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             providesTags: (result = [], error, arg) => [
                 'Doc',
@@ -70,61 +81,61 @@ export const apiSlice = createApi({
             ]
         }),
         getDoc: builder.query<any, any>({
-            query: ({ docId, token }: any) =>
+            query: ({ docId,  }: any) =>
             ({
                 url: `/docs/${docId}`,
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             providesTags: (result, error, arg) => [{ type: 'Doc', id: arg }],
         }),
         addNewDoc: builder.mutation({
-            query: ({ doc, token }) => ({
+            query: ({ doc,  } : any) => ({
                 url: '/docs/',
                 method: "POST",
                 body: doc,
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             invalidatesTags: ['Tag', 'Doc', 'DocSearch']
         }),
         editDoc: builder.mutation({
-            query: ({ doc, token }) => ({
+            query: ({doc}) => ({
                 url: `/docs/${doc.id}`,
                 method: 'PUT',
                 body: doc,
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             invalidatesTags: (result, error, arg) => ['Doc', 'Tag', 'DocSearch', { type: 'Doc', id: arg.id }]
         }),
         deleteDoc: builder.mutation({
-            query: ({ docId, token }) => ({
+            query: ({docId}) => ({ 
                 url: `/docs/${docId}`,
                 method: 'DELETE',
-                headers: authHeader(token)
+                // headers: authHeader()
             }),
             invalidatesTags: ['Doc']
         }),
         getDocSearches: builder.query({
-            query: ({ title__contains, token }: any) => ({
+            query: ({ contenttext__contains,  }: any) => ({
                 url: `/docs/search`,
-                params: { title__contains },
-                headers: authHeader(token)
+                params: { contenttext__contains },
+                // headers: authHeader()
             }),
             providesTags: ['DocSearch'],
         }),
 
         getUsers: builder.query<any, string>({
-            query: (token: string) =>
+            query: () =>
             ({
                 url: '/users',
-                headers: authHeader(token),
+                // headers: authHeader(),
             }),
             providesTags: ['User']
         }),
         getUser: builder.query<any, any>({
-            query: ({userSlug, token} : any) =>
+            query: ({userSlug, } : any) =>
             ({
                 url: `/users/${userSlug}`,
-                headers : authHeader(token)
+                // headers : authHeader()
             })
         }),
         addNewUser: builder.mutation({
@@ -139,19 +150,19 @@ export const apiSlice = createApi({
             invalidatesTags: ['User', 'Tag']
         }),
         getComments : builder.query<any, string>({
-            query : (token : string) => 
+            query : () => 
             ({
                 url : `/comments`,
-                headers : authHeader(token),
+                // headers : authHeader(),
             }),
             providesTags : ['Comment']
         }),
         addNewComment : builder.mutation({
-            query : ({comment, token} : any) => ({
+            query : ({comment} : any) => ({
                 url : '/comments/',
                 method : 'POST',
                 body : comment,
-                headers : authHeader(token),
+                // headers : authHeader(),
             }),
             invalidatesTags : ['Comment']
         })
