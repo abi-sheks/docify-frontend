@@ -5,7 +5,9 @@ import React, { useEffect, useState } from 'react';
 import { useGetTagsQuery, useAddNewTagMutation } from '../features/api/apiSlice';
 
 //Redux imports
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
+
 //MUI imports
 import { List, Typography, Container, CircularProgress, TextField, CssBaseline, Snackbar } from '@mui/material';
 
@@ -17,10 +19,11 @@ import { CreateTagDialog, TagCard } from '../components/';
 import { Tag } from '../interfaces';
 
 //utils imports
-import { containsText } from '../utils/';
+import { containsText, checkLogin } from '../utils/';
 
 
 const TagList = () => {
+    const dispatch = useDispatch()
 
     //fetches user state and token
     const currentUser = useSelector((state: any) => state.user)
@@ -41,6 +44,15 @@ const TagList = () => {
 
 
     //side effects
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
     useEffect(() => {
         TagSuccess && setTagState(tags)
     }, [tags, TagSuccess])

@@ -9,7 +9,6 @@ const checkLogin = async (dispatch : any, userAdded : any) => {
             userAdded({
                 username: data.username,
                 email: data.email,
-                token: data.token,
             })
         )
     }

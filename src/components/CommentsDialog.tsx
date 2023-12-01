@@ -6,7 +6,9 @@ import React, { useState, useEffect } from 'react';
 import { useGetCommentsQuery, useAddNewCommentMutation } from '../features/api/apiSlice';
 
 //Redux imports
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
+
 
 //MUI imports
 import { Dialog, Typography, TextField, List, ListItem, Snackbar, } from '@mui/material';
@@ -18,7 +20,12 @@ import { Zoom } from 'react-awesome-reveal';
 //interface imports
 import { Comment } from '../interfaces';
 
+//utils
+import { checkLogin } from '../utils';
+
 const CommentsDialog = ({ docID }: any) => {
+    const dispatch = useDispatch()
+
     //fetches user for token
     const currentUser = useSelector((state: any) => state.user)
     //state
@@ -60,7 +67,7 @@ const CommentsDialog = ({ docID }: any) => {
     }
     const handleCommentSubmit = async () => {
         if (canSave) {
-            await addNewComment({ comment: { content: commentBarState, commenter: currentUser.username, parent_doc: docID, }, token: currentUser.token }).unwrap().then(
+            await addNewComment({ comment: { content: commentBarState, commenter: currentUser.username, parent_doc: docID, } }).unwrap().then(
                 (response: any) => {
                     console.log(response)
                     setCommentBarState('')
@@ -71,20 +78,30 @@ const CommentsDialog = ({ docID }: any) => {
         }
     }
 
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
+
     //List component
     const commentList = commentsFetchSuccess && commentsState?.map((comment: Comment) => {
         console.log(comment)
         if (comment.parent_doc === docID) {
             return (
                 <ListItem key={comment.comment_id} sx={{
-                    display : 'flex',
-                    flexDirection : 'column',
-                    alignItems : 'flex-start',
-                    width : '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    width: '100%',
                 }}>
                     <Zoom>
-                    <Typography textAlign='left' sx={{fontWeight : '500'}}>{comment.commenter}</Typography>
-                    <Typography textAlign='left' sx={{fontWeight : '300'}}>{comment.content}</Typography>
+                        <Typography textAlign='left' sx={{ fontWeight: '500' }}>{comment.commenter}</Typography>
+                        <Typography textAlign='left' sx={{ fontWeight: '300' }}>{comment.content}</Typography>
                     </Zoom>
                 </ListItem>
             )
@@ -107,7 +124,7 @@ const CommentsDialog = ({ docID }: any) => {
                 flexDirection: 'column',
                 justifyContent: 'space-between',
             }}>
-                <div style={{height : '80%'}}>
+                <div style={{ height: '80%' }}>
                     <Typography color='#41474d' variant='h5' sx={{
                         fontWeight: '100'
                     }}>

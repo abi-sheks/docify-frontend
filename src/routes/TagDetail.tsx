@@ -1,3 +1,5 @@
+import {useEffect} from 'react'
+
 //React router imports
 import { useParams, Link } from 'react-router-dom';
 
@@ -5,13 +7,18 @@ import { useParams, Link } from 'react-router-dom';
 import { useGetTagQuery, useEditTagMutation, useDeleteTagMutation } from '../features/api/apiSlice';
 
 //Redux imports
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
+
 
 //MUI imports
 import { Card, CardContent, CardActions, Typography, Button, List, ListItemText, ListItem } from '@mui/material';
 
 //Component imports
 import { CreateTagDialog, DeleteTagDialog } from '../components';
+
+//utils
+import { checkLogin } from '../utils';
 
 interface OwnerTypographyProps {
     username: string,
@@ -20,11 +27,13 @@ interface OwnerTypographyProps {
 const OwnerTypography = ({ username }: OwnerTypographyProps) => {
     return (
         <Typography color='#201634' sx={{ fontWeight: '500' }}>
-        {`${username} : owner`}
+            {`${username} : owner`}
         </Typography>
     )
 }
 const TagDetail = () => {
+    const dispatch = useDispatch()
+
 
     //misc hooks
     const params = useParams()
@@ -38,6 +47,15 @@ const TagDetail = () => {
     const [updateTag, { isLoading: tagUpdateLoading, isError: tagUpdateErrored }] = useEditTagMutation()
     const [deleteTag, { isError: tagDeleteErrored }] = useDeleteTagMutation()
 
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
 
     //list component
     const memberList = isSuccess && tag.users.map((username: string) => {
@@ -50,7 +68,7 @@ const TagDetail = () => {
                     {nameText}
                 </ListItemText>
             </ListItem>
-            
+
         )
     })
 

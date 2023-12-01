@@ -5,7 +5,9 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import { useGetDocsQuery, useAddNewDocMutation, useEditDocMutation, useDeleteDocMutation, useGetDocSearchesQuery, useGetTagsQuery } from '../features/api/apiSlice'
 
 //Redux imports
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
+
 
 //MUI imports
 import { Grid, TextField, Container, Select, MenuItem, SelectChangeEvent, Stack, Snackbar } from '@mui/material'
@@ -15,7 +17,7 @@ import { StyledButton, ErrorAlert } from '../components'
 import { CreateDocDialog, DocCard, FilterChip } from '../components'
 
 //utils imports
-import { tagInDoc } from '../utils'
+import { tagInDoc, checkLogin } from '../utils'
 
 //interfaces imports
 import { Doc } from '../interfaces'
@@ -23,7 +25,8 @@ import { useNavigate } from 'react-router-dom'
 
 
 const DocList = () => {
-  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
 
   //selector hook (holds token needed for API requests)
   const currentUser = useSelector((state: any) => state.user)
@@ -52,7 +55,7 @@ const DocList = () => {
   const {
     data: searched = [],
     isError: searchDocsErrored,
-  } = useGetDocSearchesQuery({ contenttext__contains: searchState, token: currentUser.token })
+  } = useGetDocSearchesQuery({ contenttext__contains: searchState })
 
   //particular state requires error from above hook to setState
   const [searchDocsErroredState, setSearchDocsErroredState] = useState<boolean>(searchDocsErrored)
@@ -156,6 +159,15 @@ const DocList = () => {
       />
     )
   })
+
+  //whoami
+  useEffect(() => {
+    (async () => {
+      await checkLogin(dispatch, userAdded)
+    }
+    )();
+  }
+    , [])
 
   return (
     <div style={{

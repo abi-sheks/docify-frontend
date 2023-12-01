@@ -37,61 +37,6 @@ const LoginScreen = () => {
     //Handlers
     const handleLogin = async () => {
         window.location.replace("http://localhost:8000/api/auth/login/")
-        // try
-        // {
-        //     const data_resp = await fetch('http://localhost:8000/api/auth/login/')
-        //     console.log(data_resp)
-        // }
-        // catch(error)
-        // {
-        //     console.log(error)
-        // }
-
-        // if (canSave) {
-        //     fetch('http://127.0.0.1:8000/api/auth/login/', {
-        //         method: 'POST',
-        //         headers: {
-        //             'Content-type': 'application/json',
-        //             'mode': 'no-cors',
-        //         },
-        //         body: JSON.stringify({ username: usernameState, email: emailState, password: passwordState })
-        //     }).then((response: any) => {
-        //         response.json().then((data: any) => {
-        //             console.log(data)
-        //             setUsernameState('')
-        //             setPasswordState('')
-        //             setEmailState('')
-        //             dispatch(
-        //                 userAdded({
-        //                     username: data.username,
-        //                     email: data.email,
-        //                     token: data.token,
-        //                 })
-        //             )
-        //             console.log("hit")
-        //             setIsErrorState(false)
-        //             navigate('/home')
-        //         }).catch((error: any) => {
-        //             console.log(error)
-        //             setIsErrorState(true)
-        //             setErrorMessageState("Error in fetching!")
-        //         })
-
-        //     }).catch((error: any) => {
-        //         console.log(error)
-        //         setIsErrorState(true)
-        //         setErrorMessageState("Error in fetching")
-        //     })
-        // }
-    }
-    const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUsernameState(e.target.value)
-    }
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPasswordState(e.target.value)
-    }
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEmailState(e.target.value)
     }
 
 
@@ -133,45 +78,13 @@ const LoginScreen = () => {
                     padding: '2rem',
                 }}>
                     <Typography variant='h5' color='#1a1c1e' sx={{ fontWeight: "bolder", marginBottom: "4rem" }}>Get started with Channeli</Typography>
-                    <TextField
-                        margin='dense'
-                        id='username'
-                        label='Username...'
-                        value={usernameState}
-                        fullWidth
-                        variant='outlined'
-                        onChange={handleUsernameChange}
-                    />
-                    <TextField
-                        margin='dense'
-                        id='email'
-                        label='Email...'
-                        value={emailState}
-                        fullWidth
-                        variant='outlined'
-                        onChange={handleEmailChange}
-                    />
-                    <TextField
-                        margin='dense'
-                        id='password'
-                        label='Password...'
-                        value={passwordState}
-                        fullWidth
-                        type='password'
-                        variant='outlined'
-                        onChange={handlePasswordChange}
-                    />
                     <StyledButton
                         sx={{
                             marginTop: '1rem',
                             marginBottom: '1rem',
                         }}
                         variant='contained' onClick={handleLogin}
-                    >Login here</StyledButton>
-                    <Button component={Link} to='/register' variant='outlined' sx={{
-                        backgroundColor: '#ffffff',
-                        color: '#006492',
-                    }}>New? Register here</Button>
+                    >Connect</StyledButton>
                     <Typography color='#ba1a1a' display={isErrorState ? 'block' : 'none'}>{errorMessageState}</Typography>
                 </Grid>
             </Grid>

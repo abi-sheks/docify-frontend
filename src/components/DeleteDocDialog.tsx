@@ -1,12 +1,13 @@
 //React core imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 //MUI imports
 import { IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography, Tooltip, Snackbar } from '@mui/material';
 import DeleteIcon from "@mui/icons-material/Delete";
 
 //Redux imports
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
 
 //Components imports
 import { StyledButton, ErrorAlert } from ".";
@@ -14,7 +15,12 @@ import { StyledButton, ErrorAlert } from ".";
 //interfaces imports
 import { DeleteDocProps } from '../interfaces'
 
+//utils
+import { checkLogin } from '../utils';
+
+
 const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps) => {
+    const dispatch = useDispatch()
 
     //fetches user token
     const currentUser = useSelector((state: any) => state.user)
@@ -32,7 +38,7 @@ const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps)
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook({ docId: doc.id, token: currentUser.token }).unwrap().then((response: any) => {}
+            await deletionHook({ docId: doc.id }).unwrap().then((response: any) => { }
             ).catch((error: any) => {
                 console.log(error)
                 setDeletionErroredState(true)
@@ -43,10 +49,19 @@ const DeleteDocDialog = ({ doc, deletionHook, deletionErrored }: DeleteDocProps)
         setOpenState(false)
     }
 
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
     //render condition
     let iconDisplay = (doc.creator === currentUser.username) ? { display: 'block' } : { display: 'none' }
 
-    
+
     return (
         <div>
             <Tooltip title="Delete">

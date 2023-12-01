@@ -1,8 +1,9 @@
 //React core imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 //Redux imports
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
 
 //React router imports
 import { Link } from 'react-router-dom';
@@ -17,8 +18,13 @@ import { StyledButton, ErrorAlert } from ".";
 //interfaces imports
 import { DeleteTagProps } from '../interfaces'
 
+//utils
+import { checkLogin } from '../utils';
+
 
 const DeleteTagDialog = ({ tag, deletionHook, deletionErrored }: DeleteTagProps) => {
+    const dispatch = useDispatch()
+
     //fetch user token
     const currentUser = useSelector((state: any) => state.user)
 
@@ -35,7 +41,7 @@ const DeleteTagDialog = ({ tag, deletionHook, deletionErrored }: DeleteTagProps)
     }
     const handleCloseConfirm = async () => {
         try {
-            await deletionHook({ tagId: tag.id, token: currentUser.token }).unwrap()
+            await deletionHook({ tagId: tag.id }).unwrap()
                 .then((response: any) => { })
                 .catch((error: any) => {
                     setDeletionErroredState(true)
@@ -46,6 +52,16 @@ const DeleteTagDialog = ({ tag, deletionHook, deletionErrored }: DeleteTagProps)
         }
         setOpenState(false)
     }
+
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
 
     //render conditions
     let iconDisplay = (tag.creator === currentUser.username) ? { display: 'block' } : { display: 'none' }

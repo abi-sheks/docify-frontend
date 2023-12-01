@@ -9,7 +9,9 @@ import { useRef, useEffect } from 'react'
 import { useGetDocQuery } from '../features/api/apiSlice';
 
 //Redux imports
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
+
 
 //React Router imports
 import { useParams, Link } from 'react-router-dom';
@@ -19,7 +21,7 @@ import { Button, Typography, Container } from '@mui/material';
 
 //Component imports
 import { CommentsDialog } from '../components';
-
+import { checkLogin } from '../utils';
 //quill imports
 import Quill from 'quill';
 import QuillCursors from 'quill-cursors';
@@ -38,6 +40,8 @@ import { WebsocketProvider } from 'y-websocket';
 
 
 const EditingScreen = () => {
+    const dispatch = useDispatch()
+
     //selector hook (holds token needed for API requests)
     const currentUser = useSelector((state: any) => state.user)
 
@@ -51,10 +55,19 @@ const EditingScreen = () => {
     }
 
     //RTK Query hook
-    const { data: doc, isSuccess } = useGetDocQuery({ docId: docId as string, token: currentUser.token })
+    const { data: doc, isSuccess } = useGetDocQuery({ docId: docId as string })
 
     //Side effects
     const quillRef: any = useRef<number>(0)
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
     useEffect(() => {
         Quill.register('modules/cursors', QuillCursors);
         Quill.register('modules/imageCompress', ImageCompress);

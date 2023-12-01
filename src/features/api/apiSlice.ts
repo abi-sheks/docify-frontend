@@ -2,14 +2,6 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { Tag, Doc } from '../../interfaces'
 import { getCookie } from '../../utils';
 
-
-
-// const authHeader = () => {
-//     return {
-//         XCSRFTOKEN : "csrfToken",
-//     }
-// }
-
 export const apiSlice = createApi({
     reducerPath: "api",
     baseQuery: fetchBaseQuery({
@@ -27,7 +19,6 @@ export const apiSlice = createApi({
         getTags: builder.query<any, any>({
             query: () => ({
                 url: '/tags',
-                // headers: authHeader()
             }),
             providesTags: (result = [], error, arg) => [
                 'Tag',
@@ -38,7 +29,6 @@ export const apiSlice = createApi({
         getTag: builder.query<any, any>({
             query: ({ tagId  }: any) => ({
                 url: `/tags/${tagId}`,
-                // headers: authHeader(),
             }),
             providesTags: (result, error, arg) => [{ type: 'Tag', id: arg }]
         }),
@@ -47,7 +37,6 @@ export const apiSlice = createApi({
                 url: '/tags/',
                 method: 'POST',
                 body: tag,
-                // headers: authHeader()
             }),
             invalidatesTags: ['Tag'],
         }),
@@ -56,7 +45,6 @@ export const apiSlice = createApi({
                 url: `/tags/${tag.id}`,
                 method: 'PUT',
                 body: tag,
-                // headers: authHeader()
             }),
             invalidatesTags: (result, error, arg) => [{ type: 'Tag', id: arg.id }]
         }),
@@ -64,7 +52,6 @@ export const apiSlice = createApi({
             query: ({ tagId }: any) => ({
                 url: `/tags/${tagId}`,
                 method: "DELETE",
-                // headers: authHeader()
             }),
             invalidatesTags: ['Tag', 'Doc']
         }),
@@ -72,7 +59,6 @@ export const apiSlice = createApi({
             query: () =>
             ({
                 url: '/docs',
-                // headers: authHeader()
             }),
             providesTags: (result = [], error, arg) => [
                 'Doc',
@@ -84,7 +70,6 @@ export const apiSlice = createApi({
             query: ({ docId,  }: any) =>
             ({
                 url: `/docs/${docId}`,
-                // headers: authHeader()
             }),
             providesTags: (result, error, arg) => [{ type: 'Doc', id: arg }],
         }),
@@ -93,7 +78,6 @@ export const apiSlice = createApi({
                 url: '/docs/',
                 method: "POST",
                 body: doc,
-                // headers: authHeader()
             }),
             invalidatesTags: ['Tag', 'Doc', 'DocSearch']
         }),
@@ -102,7 +86,6 @@ export const apiSlice = createApi({
                 url: `/docs/${doc.id}`,
                 method: 'PUT',
                 body: doc,
-                // headers: authHeader()
             }),
             invalidatesTags: (result, error, arg) => ['Doc', 'Tag', 'DocSearch', { type: 'Doc', id: arg.id }]
         }),
@@ -110,7 +93,6 @@ export const apiSlice = createApi({
             query: ({docId}) => ({ 
                 url: `/docs/${docId}`,
                 method: 'DELETE',
-                // headers: authHeader()
             }),
             invalidatesTags: ['Doc']
         }),
@@ -118,7 +100,6 @@ export const apiSlice = createApi({
             query: ({ contenttext__contains,  }: any) => ({
                 url: `/docs/search`,
                 params: { contenttext__contains },
-                // headers: authHeader()
             }),
             providesTags: ['DocSearch'],
         }),
@@ -127,7 +108,6 @@ export const apiSlice = createApi({
             query: () =>
             ({
                 url: '/users',
-                // headers: authHeader(),
             }),
             providesTags: ['User']
         }),
@@ -135,7 +115,6 @@ export const apiSlice = createApi({
             query: ({userSlug, } : any) =>
             ({
                 url: `/users/${userSlug}`,
-                // headers : authHeader()
             })
         }),
         addNewUser: builder.mutation({
@@ -153,7 +132,6 @@ export const apiSlice = createApi({
             query : () => 
             ({
                 url : `/comments`,
-                // headers : authHeader(),
             }),
             providesTags : ['Comment']
         }),
@@ -162,7 +140,6 @@ export const apiSlice = createApi({
                 url : '/comments/',
                 method : 'POST',
                 body : comment,
-                // headers : authHeader(),
             }),
             invalidatesTags : ['Comment']
         })

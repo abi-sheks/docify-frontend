@@ -1,11 +1,13 @@
 //React import
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 //RTK Query import
 import { useGetTagsQuery, useGetUsersQuery } from '../features/api/apiSlice';
 
 //Redux imports
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
+
 
 //MUI import
 import { Dialog, DialogTitle, DialogActions, TextField, Select, MenuItem, SelectChangeEvent, Snackbar, Typography, FormControl, FormGroup, FormControlLabel, Switch } from '@mui/material';
@@ -14,13 +16,14 @@ import { Dialog, DialogTitle, DialogActions, TextField, Select, MenuItem, Select
 import { StyledButton, ErrorAlert } from '.';
 
 //utils import
-import { slugify } from '../utils';
+import { slugify, checkLogin } from '../utils';
 
 //interfaces import
 import { CreateDocProps } from '../interfaces'
 
 
 const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEditReaders, canEditWriters }: CreateDocProps) => {
+  const dispatch = useDispatch()
 
   //user state for token
   const currentUser = useSelector((state: any) => state.user)
@@ -130,7 +133,7 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
         let slug
         if (createMode) {
           slug = slugify(titleState)
-          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username, accessors: accessorsState, restricted : isRestrictedState }, token: currentUser.token}).unwrap().
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, creator: currentUser.username, accessors: accessorsState, restricted: isRestrictedState } }).unwrap().
             then((response: any) => {
               setReadersState([])
               setWritersState([])
@@ -141,7 +144,7 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
 
           slug = oldSlug
           //doc? works because doc must exist for this to run
-          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, id: doc?.id, creator: doc?.creator, restricted: isRestrictedState, accessors: accessorsState }, token: currentUser.token }).unwrap().
+          await hook({ doc: { title: titleState, read_tags: readersState, write_tags: writersState, slug: slug, id: doc?.id, creator: doc?.creator, restricted: isRestrictedState, accessors: accessorsState } }).unwrap().
             then((response: any) => {
               console.log(response)
               setReadersState([])
@@ -157,6 +160,16 @@ const CreateDocDialog = ({ hook, mutateErrored, isLoading, message, doc, canEdit
       setOpenState(false)
     }
   }
+
+  //whoami
+  useEffect(() => {
+    (async () => {
+
+      await checkLogin(dispatch, userAdded)
+    }
+    )();
+  }
+    , [])
 
   //Component display check
   let restrictionDisplay: boolean = true

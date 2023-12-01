@@ -1,11 +1,12 @@
 //React imports
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 //RTK query imports
 import { useGetUsersQuery } from '../features/api/apiSlice';
 
 //Redux imports
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { userAdded } from '../features/user/userSlice';
 
 //MUI imports
 import { Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, MenuItem, DialogContentText, SelectChangeEvent, Typography, Snackbar } from '@mui/material';
@@ -14,13 +15,14 @@ import { Dialog, DialogTitle, DialogActions, DialogContent, TextField, Select, M
 import { StyledButton, ErrorAlert } from '.';
 
 //utils imports
-import { slugify } from '../utils';
+import { slugify, checkLogin } from '../utils';
 
 //interface imports
 import { CreateTagProps } from '../interfaces'
 
 
 const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, tag }: CreateTagProps) => {
+    const dispatch = useDispatch()
 
     //fetches token state
     const currentUser = useSelector((state: any) => state.user)
@@ -106,7 +108,7 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
                 if (createMode) {
 
                     slug = slugify(nameState)
-                    await hook({ tag: { name: nameState, users: membersState, slug: slug, creator: currentUser.username, admins: adminsState }, token: currentUser.token }).unwrap().then(
+                    await hook({ tag: { name: nameState, users: membersState, slug: slug, creator: currentUser.username, admins: adminsState } }).unwrap().then(
                         (response: any) => {
                         }
                     ).catch((error: any) => {
@@ -117,7 +119,7 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
 
                     slug = oldSlug
                     //can do tag? because this can only run if tag already exists.
-                    await hook({ tag: { name: nameState, users: membersState, slug: slug, id: tag?.id, creator: tag?.creator, admins : adminsState }, token: currentUser.token }).unwrap().then(
+                    await hook({ tag: { name: nameState, users: membersState, slug: slug, id: tag?.id, creator: tag?.creator, admins: adminsState } }).unwrap().then(
                         (response: any) => {
                         }
                     ).catch((error: any) => {
@@ -132,6 +134,16 @@ const CreateTagDialog = ({ canMutate, hook, mutateErrored, isLoading, message, t
         }
 
     }
+
+    //whoami
+    useEffect(() => {
+        (async () => {
+
+            await checkLogin(dispatch, userAdded)
+        }
+        )();
+    }
+        , [])
 
     let buttonDisplay = canMutate ? { display: 'block' } : { display: 'none' }
     return (
